@@ -40,7 +40,9 @@
 <h2>Objectives</h2>
 <p>
 
-My objective was to develop an improved vehicle detection algorithm with the ability to detect and track multiple vehicles within the camera frame. This is a problem I am still actively working to solve.
+My objective was to develop an improved vehicle detection algorithm with the ability to detect and track multiple vehicles within a camera frame. This is a problem I am still actively working to solve.
+
+Previous attempts to develop a vehicle detection system were marginly successful. Specifically, using Matlab and OpenCV, we were able to develop a good vehicle detector based on HOG features. The area where this detection system fell short was in tracking and identifying multiple vehicles as they moved throughout a frame. 
 
 </p>
 
@@ -49,6 +51,13 @@ My objective was to develop an improved vehicle detection algorithm with the abi
 
 <p>
 
+There are a number of methods I am currently working on to improve the detection system:
+
+I am using an Aggregated Channel Feature (ACF) detection algorithm to train a new vehicle detector. Compared to the previous detection methods, ACF should provide a more accurate detector that reduces false-positives, as the features are more robust to changes in colour, brightness. 
+
+After the ACF, I have developed a heatmap of the vehicle detector to provide a simplified outlook of where vehicles are within the frame. 
+
+I than track the 'heat' sources throughout the frame rather than the vehicles themselves. 
 
 </p>
 
@@ -57,6 +66,7 @@ My objective was to develop an improved vehicle detection algorithm with the abi
 
 <p>
 
+As of present, the strategies above have resulted in a more robust and accurate vehicle detector that can track vehicles throughout a frame. I am still working on this problem to further improve the system and have it work smoothly on the S32V ADAS Hardware. 
 
 
 </p>
