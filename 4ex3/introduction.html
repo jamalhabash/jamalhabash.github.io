@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Stop Sign Detection - Jamal Habash</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<base >
+<style type="text/css">
+	@import url('reset.css');
+	@import url('style.css');
+</style>
+<link rel="shortcut icon" href="favicon.png" type="image/png">
+        <link rel="next" href="starting-out.html">
+<link type="text/css" rel="stylesheet" href="sh/Styles/SyntaxHighlighter.css">
+<link href="rss.php" rel="alternate" type="application/rss+xml" title="">
+</head>
+<body class="introcontent">
+<div class="bgwrapper">
+    <div id="content">
+                <div class="footdiv" style="margin-bottom:25px;">
+                <ul>
+                    <li style="text-align:left">
+                                            </li>
+                    <li style="text-align:center">
+                        <a href="chapters.html">Table of contents</a>
+                    </li>
+                    <li style="text-align:right">
+                                                        <a href="starting-out.html" class="nxtlink">Vehicle Detection</a>
+                                            </li>
+                </ul>
+            </div>
+        <h1>Stop Sign Detection</h1> 
+
+<a name="Objectives"></a>
+
+	
+<p>In September of 2017, the McMaster Engineering EcoCar 3 ADAS team was in the process of developing goals for it's final year in the EcoCar 3 competition. Having been involved with the team for 2 years, I continuted my work on the development of computer vision systems such as Stop Sign Detection. </p>
+
+<h2>Objectives</h2>
+<p>
+
+My objective was to develop a stop-sign detection algorithm with a higher success rate, and lower false-positive rate than previously developed systems. 
+
+</p>
+
+<a name="Strategies"></a>
+<h2>Strategies</h2>
+
+<p>
+
+The stop sign-detection system was developed using MatLabs computer vision toolbox, and the 'Cascade Object Detector', a built-in function based on the Viola-Jones algorithm. To improve the detector results, I used an image training set with uniform resoltion, and a greater number of images. Additionally, I pre-processed the training images to take advantage of features in the YUV colour system that make a stop-sign more prominent against the rest of the image.
+
+</p>
+
+<a name="Outcomes"></a>
+<h2>Outcomes</h2>
+
+<p>
+
+After many attempts, a better detection system was achieved. By increasing the size of the training set, and by using images of uniform resolution, the detector produced fewer false-positives, and had increased successs in detecting stop-signs. See the video below for the final result. 
+
+In the future, it may be beneifical to use an aggregated channel feature detection, to better extract and classify stop-sign features. This may result in a detection system with an even higher success rate, as more image features can be used to describe and classify objects. 
+
+</p>
+
+
+
+<iframe width="854" height="480" src="https://www.youtube.com/embed/OMTtAH3ihdk" frameborder="0" gesture="media" allow="encrypted-media" allowfullscreen></iframe>
+
+                <div class="footdiv">
+                <ul>
+                    <li style="text-align:left">
+                                            </li>
+                    <li style="text-align:center">
+                        <a href="chapters.html">Table of contents</a>
+                    </li>
+                    <li style="text-align:right">
+                                                        <a href="starting-out.html" class="nxtlink">Starting Out</a>
+                                            </li>
+                </ul>
+            </div>
+        </div>
+    <script type="text/javascript" src="sh/Scripts/shCore.js"></script>
+    <script type="text/javascript" src="shBrushHaskell.js"></script>
+    <script type="text/javascript" src="shBrushPlain.js"></script>
+    <script type="text/javascript">
+    dp.SyntaxHighlighter.ClipboardSwf = 'sh/Scripts/clipboard.swf';
+    dp.SyntaxHighlighter.HighlightAll('code', false, false, false, 1, false);
+    </script>
+</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-4461592-3");
+pageTracker._trackPageview();
+</script>
+</body>
+
+<!-- Mirrored from learnyouahaskell.com/introduction by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 15 Jul 2017 16:18:42 GMT -->
+</html>
