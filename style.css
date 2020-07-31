@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400');
+
+body {
+
+    margin: 0;
+    padding: 0;
+    font-family: 'Open Sans', sans-serif;
+    color: white;
+    overflow: hidden;
+    
+}
+
+h1 {
+
+    padding: 0px 0px 0px 0px;
+    margin: 0px 5px 0px 0px;
+    color: #072744;
+
+}
+
+h2 {
+    padding: 3px;
+    margin: 0 0 24px 0;
+    color: #94A1AA;
+    line-height: 30px;
+
+
+}
+
+h3 {
+    padding: 3px;
+    margin: 0 0 24px 0;
+    color: #072744;
+    border-bottom: 2px solid #94A1AA;
+
+
+}
+
+p {
+
+    margin: 0 0 24px 0;
+    padding: 0;
+    font-size: 25px;
+    font-style: normal;
+    line-height: 30px;
+    font-weight: 300;
+
+
+}
+
+#Page {
+
+    
+
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(560px, 45fr) 55fr;
+    grid-template-rows: 100vh;
+    
+
+}
+
+#Header {
+
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: auto 85vh;
+    background-color: #072744;
+    /* border: 10px solid #072744;
+    border-right: 5px solid #072744;  */
+
+}
+
+#HeaderImage {
+
+    background-image: url("websiteprofile.png");
+    background-size: contain; /* Resize the background image to cover the entire container */
+    background-repeat: no-repeat;
+    background-position: center bottom; /* Center the image */
+    
+}
+
+#Profile {
+    padding: 24vh 42px 0px 42px; /*top right bottom left*/
+    margin: 0;
+    background-color: white;
+    overflow: auto;
+    /* border: 10px solid #072744; */
+    /* border-left: 5px solid #072744;  */
+
+}
+
+a, a:visited {
+    text-decoration: none;
+    color: #94A1AA;
+  }
+
+a:hover {
+    color: #072744;
+}
+
+.list-columns {
+    -moz-column-count: 2;
+    -moz-column-gap: 20px;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 20px;
+    column-count: 2;
+    column-gap:20px;
+    }
+
+@media screen and (max-width: 900px)  { 
+
+    body {
+
+        margin: 0;
+        padding: 0;
+        font-family: 'Open Sans', sans-serif;
+        color: white;
+        overflow: visible;
+        
+    }
+
+    #Header {
+
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: 15fr 85fr;
+        background-color: #072744;
+
+    
+    }
+
+    #Page {
+
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: 60vh fit-content(40vh);
+
+    
+    }
+
+    #Profile {
+        padding: 42px 42px 42px 42px; /*top right bottom left*/
+        margin: 0;
+        background-color: 072744;
+        overflow: visible;
+ 
+    
+    }
+
+    .list-columns {
+        -moz-column-count: 2;
+        -moz-column-gap: 20px;
+        -webkit-column-count: 2;
+        -webkit-column-gap: 20px;
+        column-count: 2;
+        column-gap:20px;
+        }
+
+}
