@@ -74,7 +74,7 @@ p {
 
 #HeaderImage {
 
-    background-image: url("websiteprofile.png");
+    background-image: url("../assets/websiteprofile.png");
     background-size: contain; /* Resize the background image to cover the entire container */
     background-repeat: no-repeat;
     background-position: center bottom; /* Center the image */
@@ -149,6 +149,12 @@ a:hover {
         overflow: visible;
  
     
+    }
+
+    #DesktopOnly {
+
+        visibility: hidden;
+
     }
 
     .list-columns {
