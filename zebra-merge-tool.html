@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zebra Merge Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .drag-area {
+            border: 2px dashed #4CAF50;
+            padding: 40px;
+            margin: 20px 0;
+            width: 80%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
+        }
+
+        .drag-area:hover {
+            background-color: #f4f4f4;
+        }
+
+        .drag-area p {
+            margin: 0;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .file-list {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .file-list h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .file-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .file-list li {
+            background-color: #f4f4f4;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Zebra Merge Tool</h1>
+    <div class="drag-area" id="drag-area">
+        <p>Drag and drop your Excel files here</p>
+    </div>
+    <div class="button-container">
+        <button class="download-btn" id="download-btn" disabled>Download Merged Excel</button>
+        <button class="reset-btn" id="reset-btn">Reset</button>
+    </div>
+    <div class="file-list" id="file-list-container" style="display: none;">
+        <h3>Dropped Files:</h3>
+        <ul id="file-list"></ul>
+    </div>
+
+    <script>
+        // Event listeners for drag and drop
+        const dragArea = document.getElementById('drag-area');
+        const downloadBtn = document.getElementById('download-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        let mergedData = [];
+        let droppedFiles = []; // New array to store dropped files
+
+        // Add file input for clicking to select files
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.multiple = true;
+        fileInput.accept = '.xlsx, .xls, .csv';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+
+        // Add click event to drag area to trigger file selection
+        dragArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle file selection via file input
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            handleFiles(files);
+        });
+
+        // Handle dragover and drop
+        dragArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragArea.style.backgroundColor = "#f4f4f4";
+        });
+
+        dragArea.addEventListener('dragleave', () => {
+            dragArea.style.backgroundColor = "transparent";
+        });
+
+        dragArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragArea.style.backgroundColor = "transparent";
+
+            // Get the files dropped
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        // Handle file processing
+        function handleFiles(files) {
+            const fileList = document.getElementById('file-list');
+            const fileListContainer = document.getElementById('file-list-container');
+            
+            // Add new files to the existing dropped files
+            for (let i = 0; i < files.length; i++) {
+                let file = files[i];
+                
+                // Check if file is already dropped
+                if (!droppedFiles.some(existingFile => existingFile.name === file.name)) {
+                    // Add file to dropped files array
+                    droppedFiles.push(file);
+                    
+                    // Add file name to the list
+                    const listItem = document.createElement('li');
+                    listItem.textContent = file.name;
+                    fileList.appendChild(listItem);
+                }
+            }
+
+            // Show the file list container
+            fileListContainer.style.display = 'block';
+            
+            // Enable download button if files are present
+            downloadBtn.disabled = droppedFiles.length === 0;
+        }
+
+        // Handle download of merged Excel
+        downloadBtn.addEventListener('click', () => {
+            if (droppedFiles.length > 0) {
+                // Process all dropped files
+                let filePromises = droppedFiles.map(readExcel);
+
+                Promise.all(filePromises).then((fileData) => {
+                    // Merge all data rows
+                    mergedData = [].concat(...fileData);
+                    
+                    // Create and download the merged Excel
+                    const worksheet = XLSX.utils.aoa_to_sheet(mergedData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, worksheet, 'Merged Data');
+                    XLSX.writeFile(wb, 'merged_data.xlsx');
+                    
+                    // Reset after download
+                    resetFileList();
+                });
+            }
+        });
+
+        // Reset button event listener
+        resetBtn.addEventListener('click', () => {
+            resetFileList();
+            // Reset drag area text color and background
+            dragArea.style.backgroundColor = 'transparent';
+        });
+
+        // Reset file list and state
+        function resetFileList() {
+            droppedFiles = [];
+            mergedData = [];
+            
+            const fileList = document.getElementById('file-list');
+            const fileListContainer = document.getElementById('file-list-container');
+            
+            fileList.innerHTML = '';
+            fileListContainer.style.display = 'none';
+            downloadBtn.disabled = true;
+        }
+
+        // Read an Excel file and extract rows
+        function readExcel(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // Assuming all sheets are in the first sheet
+                    const sheet = workbook.Sheets[workbook.SheetNames[1]];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Get rows as an array
+                    
+                    // Filter rows to only include those with specific keywords
+                    const filteredData = jsonData.filter(row => 
+                        row.some(cell => 
+                            typeof cell === 'string' && 
+                            (cell.includes("Total distance travelled") || 
+                             cell.includes("Total distance moved (light)") ||
+                             cell.includes("Total distance moved (dark)") ||
+                             cell.includes("Total distance moved (first 30 seconds of transition)") ||
+                             cell.includes("Average Velocity") ||
+                             cell.includes("Average velocity (light)") ||
+                             cell.includes("Average velocity (dark)") ||
+                             cell.includes("Average velocity (transitions)"))
+                        )
+                    );
+
+                    // Transpose the filtered data
+                    const transposedData = filteredData[0] ? filteredData[0].map((_, colIndex) => 
+                        filteredData.map(row => row[colIndex])
+                    ) : [];
+
+
+
+                    resolve(transposedData);
+                };
+
+                reader.onerror = function () {
+                    reject(new Error("File reading error"));
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+    </script>
+
+</body>
+</html>
