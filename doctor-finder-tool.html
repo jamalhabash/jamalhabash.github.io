@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Directory & Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .main-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            align-items: flex-end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #34495e;
+        }
+
+        .control-group input[type="text"],
+        .control-group select,
+        .control-group input[type="file"] {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .control-group input[type="file"] {
+            padding: 3px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding-left: 15px;
+        }
+
+        #clearFilters, #downloadData {
+            padding: 10px 15px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            height: 38px;
+        }
+        #clearFilters {
+            background-color: #e74c3c;
+        }
+        #clearFilters:hover {
+            background-color: #c0392b;
+        }
+        #downloadData {
+            background-color: #3498db;
+        }
+        #downloadData:hover {
+            background-color: #2980b9;
+        }
+
+        .doctor-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); /* Wider cards for status buttons */
+            gap: 20px;
+        }
+
+        .doctor-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease, border-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid transparent; 
+        }
+
+        .doctor-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .doctor-card h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            color: #2980b9;
+        }
+
+        .doctor-card p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .doctor-card strong {
+            color: #555;
+        }
+        
+        .status-controls {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+        .status-controls p { /* For the "Contact Status:" label */
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .status-buttons {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+            gap: 5px;
+        }
+        .status-button {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .status-button:hover {
+            background-color: #e9e9e9;
+        }
+        .status-button.active { /* Style for the selected status button */
+            color: white;
+            border-color: #555;
+        }
+        .status-button.active.status-none { background-color: #7f8c8d; border-color: #7f8c8d;} /* Grey */
+        .status-button.active.status-not_accepting { background-color: #e74c3c; border-color: #c0392b;} /* Red */
+        .status-button.active.status-waitlisted { background-color: #f39c12; border-color: #d35400;} /* Orange */
+        .status-button.active.status-accepting { background-color: #2ecc71; border-color: #27ae60;} /* Green */
+        .status-button.active.status-contacted_no_reply { background-color: #3498db; border-color: #2980b9;} /* Blue */
+
+
+        /* Status visual cues for card */
+        .doctor-card.status-not_accepting {
+            opacity: 0.7;
+            border-left-color: #e74c3c; 
+        }
+        .doctor-card.status-not_accepting h2,
+        .doctor-card.status-not_accepting p:not(.status-controls p):not(.status-buttons button) { /* Exclude status controls from strikethrough */
+            text-decoration: line-through;
+        }
+        .doctor-card.status-waitlisted { border-left-color: #f39c12; }
+        .doctor-card.status-accepting { border-left-color: #2ecc71; }
+        .doctor-card.status-contacted_no_reply { border-left-color: #3498db; }
+
+
+        .doctor-card .reg-status-inactive {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .doctor-card .reg-status-active {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-controls, .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .control-group {
+                 width: 100%;
+            }
+            #clearFilters, #downloadData {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .doctor-list {
+                grid-template-columns: 1fr; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Doctor Directory & Tracker</h1>
+
+        <div class="main-controls">
+            <div class="control-group">
+                <label for="fileInput">Upload Doctor Data File (e.g., output5.txt):</label>
+                <input type="file" id="fileInput" accept=".txt">
+            </div>
+
+            <div class="control-group">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect">
+                    <option value="name">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="cpsonumber">CPSO Number (Asc)</option>
+                    <option value="cpsonumber-desc">CPSO Number (Desc)</option>
+                    <option value="city">City (A-Z)</option>
+                    <option value="specialty">Primary Specialty (A-Z)</option>
+                    <option value="contactStatus">Contact Status</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="cityFilter">Filter by City:</label>
+                <input type="text" id="cityFilter" placeholder="Enter city...">
+            </div>
+            <div class="control-group">
+                <label for="specialtyFilter">Filter by Specialty:</label>
+                <input type="text" id="specialtyFilter" placeholder="Enter specialty (case-insensitive)...">
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button id="clearFilters">Clear All Filters</button>
+            <button id="downloadData">Download Modified Data</button>
+        </div>
+
+        <div id="doctorList" class="doctor-list">
+            <p>Please upload the data file to see the directory.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('fileInput');
+            const sortSelect = document.getElementById('sortSelect');
+            const cityFilterInput = document.getElementById('cityFilter');
+            const specialtyFilterInput = document.getElementById('specialtyFilter');
+            const doctorListDiv = document.getElementById('doctorList');
+            const clearFiltersButton = document.getElementById('clearFilters');
+            const downloadDataButton = document.getElementById('downloadData');
+
+            let allDoctors = [];
+
+            const contactStatusOptions = [
+                { value: '', label: 'Unknown' },
+                { value: 'not_accepting', label: 'Not Accepting' },
+                { value: 'waitlisted', label: 'Waitlisted' },
+                { value: 'accepting', label: 'Accepting' },
+                { value: 'contacted_no_reply', label: 'Contacted - No Reply' }
+            ];
+
+            fileInput.addEventListener('change', handleFileUpload);
+            sortSelect.addEventListener('change', applyFiltersAndSort);
+            cityFilterInput.addEventListener('input', applyFiltersAndSort);
+            specialtyFilterInput.addEventListener('input', applyFiltersAndSort);
+            
+            clearFiltersButton.addEventListener('click', () => {
+                cityFilterInput.value = '';
+                specialtyFilterInput.value = '';
+                applyFiltersAndSort();
+            });
+
+            downloadDataButton.addEventListener('click', downloadModifiedData);
+
+            doctorListDiv.addEventListener('click', (event) => {
+                if (event.target.classList.contains('status-button')) {
+                    const cpsonumber = parseInt(event.target.dataset.cpsonumber, 10);
+                    const newStatus = event.target.dataset.statusValue;
+                    updateDoctorStatus(cpsonumber, newStatus);
+                }
+            });
+
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const content = e.target.result;
+                        parseDoctorData(content);
+                        applyFiltersAndSort();
+                    };
+                    reader.onerror = () => {
+                        console.error("Error reading file.");
+                        doctorListDiv.innerHTML = `<p style="color: red;">Error reading file.</p>`;
+                        allDoctors = [];
+                    };
+                    reader.readAsText(file);
+                } else {
+                    allDoctors = [];
+                    applyFiltersAndSort();
+                }
+            }
+
+            function parseDoctorData(textContent) {
+                if (!textContent || textContent.trim() === "") {
+                    allDoctors = []; return;
+                }
+                const jsonArrayString = "[" + textContent.trim().replace(/}\s*{/g, "},{") + "]";
+                try {
+                    const parsedArray = JSON.parse(jsonArrayString);
+                    if (!Array.isArray(parsedArray)) throw new Error("Parsed content is not an array.");
+                    allDoctors = parsedArray.map(doctor => {
+                        if (doctor && typeof doctor === 'object') {
+                            doctor.name = (doctor.name || 'N/A').trim();
+                            doctor.cpsonumber = parseInt(doctor.cpsonumber, 10) || 0;
+                            doctor.specialties = (doctor.specialties || 'N/A').trim();
+                            let primarySpec = doctor.specialties.split('|')[0].trim();
+                            if (primarySpec.includes('(')) primarySpec = primarySpec.substring(0, primarySpec.indexOf('(')).trim();
+                            doctor.primarySpecialty = primarySpec || 'N/A';
+                            doctor.city = (doctor.city || 'N/A').trim();
+                            let province = (doctor.province || 'N/A').trim().toUpperCase();
+                            if (province.startsWith('ONTARIO')) province = 'ON';
+                            doctor.province = province;
+                            doctor.postalcode = (doctor.postalcode || 'N/A').trim().replace(/\s+/g, '');
+                            doctor.phonenumber = (doctor.phonenumber || 'N/A').trim();
+                            doctor.fax = (doctor.fax || 'N/A').trim();
+                            doctor.registrationstatus = (doctor.registrationstatus || 'N/A').trim();
+                            doctor.street1 = (doctor.street1 || '').trim();
+                            doctor.street2 = (doctor.street2 || '').trim();
+                            doctor.street3 = (doctor.street3 || '').trim();
+                            doctor.street4 = (doctor.street4 || '').trim();
+                            doctor.mostrecentformername = (doctor.mostrecentformername || '').trim();
+                            doctor.noaddressmessage = (doctor.noaddressmessage || '').trim();
+                            doctor.additionaladdresscount = doctor.additionaladdresscount === undefined ? 0 : parseInt(doctor.additionaladdresscount, 10) || 0;
+                            doctor.primaryaddressnotinpractice = !!doctor.primaryaddressnotinpractice;
+                            doctor.contactStatus = doctor.contactStatus || ''; 
+                            return doctor;
+                        }
+                        return null;
+                    }).filter(doctor => doctor !== null);
+                } catch (error) {
+                    console.error("Error parsing content:", error);
+                    allDoctors = [];
+                }
+            }
+            
+            function updateDoctorStatus(cpsonumber, newStatus) {
+                const doctorIndex = allDoctors.findIndex(d => d.cpsonumber === cpsonumber);
+                if (doctorIndex > -1) {
+                    // If clicking the same active status button, clear it (toggle off)
+                    if (allDoctors[doctorIndex].contactStatus === newStatus) {
+                        allDoctors[doctorIndex].contactStatus = '';
+                    } else {
+                        allDoctors[doctorIndex].contactStatus = newStatus;
+                    }
+                    applyFiltersAndSort(); 
+                }
+            }
+
+            function applyFiltersAndSort() {
+                let filteredDoctors = [...allDoctors];
+                const cityQuery = cityFilterInput.value.toLowerCase().trim();
+                if (cityQuery) {
+                    filteredDoctors = filteredDoctors.filter(doc => doc.city.toLowerCase().includes(cityQuery));
+                }
+                const specialtyQuery = specialtyFilterInput.value.toLowerCase().trim();
+                if (specialtyQuery) {
+                    filteredDoctors = filteredDoctors.filter(doc => doc.specialties.toLowerCase().includes(specialtyQuery));
+                }
+                const sortBy = sortSelect.value;
+                switch (sortBy) {
+                    case 'name': filteredDoctors.sort((a, b) => a.name.localeCompare(b.name)); break;
+                    case 'name-desc': filteredDoctors.sort((a, b) => b.name.localeCompare(a.name)); break;
+                    case 'cpsonumber': filteredDoctors.sort((a, b) => a.cpsonumber - b.cpsonumber); break;
+                    case 'cpsonumber-desc': filteredDoctors.sort((a, b) => b.cpsonumber - a.cpsonumber); break;
+                    case 'city': filteredDoctors.sort((a, b) => a.city.localeCompare(b.city)); break;
+                    case 'specialty': filteredDoctors.sort((a, b) => a.primarySpecialty.localeCompare(b.primarySpecialty)); break;
+                    case 'contactStatus': filteredDoctors.sort((a, b) => (a.contactStatus || '').localeCompare(b.contactStatus || '')); break;
+                }
+                renderDoctors(filteredDoctors);
+            }
+
+            function renderDoctors(doctorsToRender) {
+                doctorListDiv.innerHTML = ''; 
+                if (doctorsToRender.length === 0) { /* ... (messaging logic remains same) ... */ 
+                    if (allDoctors.length > 0) {
+                        doctorListDiv.innerHTML = '<p>No doctors match your current filters.</p>';
+                    } else if (fileInput.files.length > 0) {
+                        doctorListDiv.innerHTML = '<p>No valid doctor data found in the uploaded file. Ensure correct JSON format.</p>';
+                    } else {
+                        doctorListDiv.innerHTML = '<p>Please upload the data file to see the directory.</p>';
+                    }
+                    return;
+                }
+
+                doctorsToRender.forEach(doc => {
+                    const card = document.createElement('div');
+                    card.className = 'doctor-card';
+                    if (doc.contactStatus) {
+                        card.classList.add(`status-${doc.contactStatus}`);
+                    }
+
+                    let addressParts = [doc.street1, doc.street2, doc.street3, doc.street4].filter(part => part);
+                    let locationParts = [doc.city, doc.province, doc.postalcode].filter(part => part && part !== 'N/A');
+                    let fullAddressString = addressParts.join(', ');
+                    if (locationParts.length > 0) fullAddressString = fullAddressString ? `${fullAddressString}; ${locationParts.join(', ')}` : locationParts.join(', ');
+                    let addressHTML = doc.noaddressmessage ? `<p><strong>Address:</strong> ${doc.noaddressmessage}</p>` : (fullAddressString ? `<p><strong>Address:</strong> ${fullAddressString}</p>` : `<p><strong>Address:</strong> Not Available</p>`);
+                    const registrationStatusClass = `reg-status-${(doc.registrationstatus || '').toLowerCase()}`;
+
+                    let statusButtonsHTML = '<div class="status-buttons">';
+                    contactStatusOptions.forEach(opt => {
+                        const isActive = doc.contactStatus === opt.value;
+                        const activeClass = isActive ? `active status-${opt.value || 'none'}` : ''; // Add 'status-none' for default active button
+                        statusButtonsHTML += `<button class="status-button ${activeClass}" data-cpsonumber="${doc.cpsonumber}" data-status-value="${opt.value}">${opt.label}</button>`;
+                    });
+                    statusButtonsHTML += '</div>';
+
+                    card.innerHTML = `
+                        <h2>${doc.name}</h2>
+                        <p><strong>CPSO #:</strong> ${doc.cpsonumber === 0 ? 'N/A' : doc.cpsonumber}</p>
+                        <p><strong>Specialties:</strong> ${doc.specialties}</p>
+                        ${addressHTML}
+                        <p><strong>Phone:</strong> ${doc.phonenumber}</p>
+                        <p><strong>Fax:</strong> ${doc.fax}</p>
+                        <p><strong>Reg. Status:</strong> <span class="${registrationStatusClass}">${doc.registrationstatus}</span></p>
+                        ${doc.mostrecentformername ? `<p><strong>Former Name:</strong> ${doc.mostrecentformername}</p>` : ''}
+                        <p><strong>Primary Address Not In Practice:</strong> ${doc.primaryaddressnotinpractice ? 'Yes' : 'No'}</p>
+                        <p><strong>Additional Addresses:</strong> ${doc.additionaladdresscount}</p>
+                        <div class="status-controls">
+                            <p>Contact Status:</p>
+                            ${statusButtonsHTML}
+                        </div>
+                    `;
+                    doctorListDiv.appendChild(card);
+                });
+            }
+
+            function downloadModifiedData() {
+                if (allDoctors.length === 0) {
+                    alert("No data to download."); return;
+                }
+                const dataToDownload = allDoctors.map(doc => JSON.stringify(doc)).join('\n');
+                const blob = new Blob([dataToDownload], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'modified_doctors_output.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert("Data download initiated!");
+            }
+        });
+    </script>
+</body>
+</html>
