@@ -1382,11 +1382,76 @@
     e.target.value = '';
   });
 
+  // ── URL sharing with compact encoding ──
+  function compactSeg(s) {
+    const c = { t: s.type === 'gap' ? 'g' : 'c', d: s.duration };
+    if (s.type === 'gap') {
+      if (s.monthlyTransport) c.mt = s.monthlyTransport;
+      return c;
+    }
+    if (s.label && s.label !== 'Car') c.l = s.label;
+    if (s.price) c.p = s.price;
+    if (s.upfront) c.u = s.upfront;
+    if (s.residualMethod === 'depreciation') {
+      c.rm = 'dep';
+      if (s.depreciationRate) c.dr = s.depreciationRate;
+    } else {
+      if (s.futureValue) c.fv = s.futureValue;
+    }
+    if (s.fuelEconomy) c.fe = s.fuelEconomy;
+    if (s.maintenance) c.m = s.maintenance;
+    if (s.insurance) c.i = s.insurance;
+    if (s.hasLoan) {
+      c.hl = 1;
+      if (s.downPayment) c.dp = s.downPayment;
+      if (s.loanRate) c.lr = s.loanRate;
+      if (s.loanTerm && s.loanTerm !== 5) c.lt = s.loanTerm;
+    }
+    return c;
+  }
+
+  function expandSeg(c) {
+    if (c.t === 'g') {
+      return { type: 'gap', label: 'No Car', duration: c.d || 0, monthlyTransport: c.mt || 0 };
+    }
+    return {
+      type: 'car', label: c.l || 'Car', duration: c.d || 0,
+      price: c.p || 0, upfront: c.u || 0,
+      futureValue: c.fv || 0,
+      residualMethod: c.rm === 'dep' ? 'depreciation' : 'direct',
+      depreciationRate: c.dr || 0,
+      fuelEconomy: c.fe || 0, maintenance: c.m || 0, insurance: c.i || 0,
+      hasLoan: !!c.hl, downPayment: c.dp || 0, loanRate: c.lr || 0, loanTerm: c.lt || 5,
+    };
+  }
+
+  function compactData() {
+    const s = getSaveData();
+    return {
+      s: [s.shared.gasPrice, s.shared.annualKm, s.shared.years, s.shared.rate],
+      o: s.options.map(o => ({
+        n: o.name,
+        ...(o.notes ? { nt: o.notes } : {}),
+        sg: o.segments.map(compactSeg),
+      })),
+    };
+  }
+
+  function expandData(c) {
+    return {
+      shared: { gasPrice: c.s[0], annualKm: c.s[1], years: c.s[2], rate: c.s[3] },
+      options: c.o.map(o => ({
+        name: o.n, notes: o.nt || '',
+        segments: o.sg.map(expandSeg),
+      })),
+    };
+  }
+
   // Share via URL
   document.getElementById('shareUrlBtn').addEventListener('click', () => {
-    const data = getSaveData();
-    const encoded = btoa(encodeURIComponent(JSON.stringify(data)));
-    const url = window.location.origin + window.location.pathname + '#' + encoded;
+    const compact = JSON.stringify(compactData());
+    const encoded = btoa(unescape(encodeURIComponent(compact)));
+    const url = window.location.origin + window.location.pathname + '?d=' + encodeURIComponent(encoded);
     navigator.clipboard.writeText(url).then(() => {
       showStatus('Link copied!');
     }).catch(() => {
@@ -1394,21 +1459,29 @@
     });
   });
 
-  // Load from URL hash on page load
-  function loadFromHash() {
-    const hash = window.location.hash.slice(1);
-    if (!hash) return false;
-    try {
-      const data = JSON.parse(decodeURIComponent(atob(hash)));
-      loadSaveData(data);
-      return true;
-    } catch {
-      return false;
+  // Load from URL on page load
+  function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const d = params.get('d');
+    if (!d) {
+      // Try legacy hash format
+      const hash = window.location.hash.slice(1);
+      if (!hash) return false;
+      try {
+        const data = JSON.parse(decodeURIComponent(atob(hash)));
+        loadSaveData(data);
+        return true;
+      } catch { return false; }
     }
+    try {
+      const compact = JSON.parse(decodeURIComponent(escape(atob(d))));
+      loadSaveData(expandData(compact));
+      return true;
+    } catch { return false; }
   }
 
   // Initial render
-  if (!loadFromHash()) {
+  if (!loadFromURL()) {
     render();
   }
 </script>
