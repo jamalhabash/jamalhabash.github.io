@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarMath — Car Cost Comparison</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --card-bg: #fff;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --border: #ddd;
+      --accent: #2563eb;
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+      --radius: 10px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header { text-align: center; margin-bottom: 2rem; }
+    header h1 { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    header p { color: var(--text-muted); font-size: 1rem; }
+
+    .explainer {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+    }
+    .explainer summary {
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--accent);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .explainer summary::-webkit-details-marker { display: none; }
+    .explainer summary::after {
+      content: '+';
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+    .explainer[open] summary::after {
+      content: '−';
+    }
+    .explainer .explainer-content {
+      padding: 0 1.5rem 1.25rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .explainer .explainer-content h3 {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin: 1rem 0 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .explainer .explainer-content h3:first-child {
+      margin-top: 0;
+    }
+    .explainer .explainer-content p {
+      margin: 0.3rem 0;
+    }
+
+    .shared-inputs {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .shared-inputs h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .shared-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .field { display: flex; flex-direction: column; }
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .info-tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text-muted);
+      font-size: 0.6rem;
+      font-weight: 700;
+      cursor: help;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .info-tip .tip-text {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 400;
+      padding: 0.5rem 0.65rem;
+      border-radius: 6px;
+      width: 200px;
+      line-height: 1.4;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .info-tip .tip-text::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--text);
+    }
+    .info-tip:hover .tip-text { display: block; }
+    .field input, .field select {
+      padding: 0.5rem 0.6rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      width: 100%;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .options-wrapper {
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.5rem;
+      position: relative;
+    }
+    .toolbar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .toolbar-btn {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .toolbar-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .toolbar-divider {
+      width: 1px;
+      height: 1.5rem;
+      background: var(--border);
+    }
+    .toolbar-status {
+      font-size: 0.8rem;
+      color: var(--green);
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .toolbar-status.show { opacity: 1; }
+    #fileInput { display: none; }
+
+    .options-wrapper {
+      display: flex;
+      position: relative;
+    }
+    .scroll-fade {
+      position: sticky;
+      top: 0;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      align-self: stretch;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      font-weight: 700;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .scroll-fade-left {
+      left: 0;
+      background: linear-gradient(270deg, transparent, var(--bg));
+      margin-right: -3rem;
+    }
+    .scroll-fade-right {
+      right: 0;
+      background: linear-gradient(90deg, transparent, var(--bg));
+      margin-left: -3rem;
+    }
+    .options-wrapper.overflow-left .scroll-fade-left,
+    .options-wrapper.overflow-right .scroll-fade-right {
+      display: flex;
+    }
+    .scroll-fade-right .scroll-arrow {
+      animation: nudge-right 1.5s ease-in-out infinite;
+    }
+    .scroll-fade-left .scroll-arrow {
+      animation: nudge-left 1.5s ease-in-out infinite;
+    }
+    @keyframes nudge-right {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-6px); }
+    }
+    @keyframes nudge-left {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(6px); }
+    }
+    .options {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .add-option-btn {
+      background: none;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+    .add-option-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .copy-seg-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .copy-seg-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .paste-btn {
+      background: none;
+      border: 2px dashed var(--accent);
+      border-radius: 6px;
+      padding: 0.35rem;
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+    }
+    .paste-btn:hover {
+      opacity: 1;
+    }
+    .remove-option-btn {
+      background: none;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .remove-option-btn:hover { background: var(--red-light); }
+
+    .option {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-width: 480px;
+      width: 480px;
+      flex: 0 0 auto;
+    }
+    .options.single-option .option {
+      width: 50%;
+    }
+
+    .option-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .option-header h2 {
+      font-size: 1.15rem;
+      margin: 0;
+    }
+    .option-header input {
+      font-size: 1.15rem;
+      font-weight: 700;
+      border: none;
+      border-bottom: 2px dashed var(--border);
+      border-radius: 0;
+      padding: 0.2rem 0;
+      background: transparent;
+      width: 100%;
+    }
+    .option-header input:focus {
+      outline: none;
+      border-bottom-color: var(--accent);
+    }
+
+    .segment {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem;
+      border: 2.5px solid transparent;
+      transition: border-color 0.3s;
+    }
+
+    .segment-header {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .segment-header h3 {
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+    .segment-header .remove-btn {
+      background: none;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      line-height: 1;
+    }
+    .segment-header .remove-btn:hover { background: var(--red-light); }
+
+    .segment .inputs { margin-bottom: 1rem; }
+    .segment .inputs .field { margin-bottom: 0.65rem; }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+    .input-row .field { margin-bottom: 0 !important; }
+
+    .breakdown {
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+    }
+    .breakdown h4 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.2rem 0;
+      font-size: 0.85rem;
+    }
+    .row .label { color: var(--text-muted); }
+    .row .value { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    .row.subtotal {
+      border-top: 1.5px solid var(--border);
+      margin-top: 0.3rem;
+      padding-top: 0.4rem;
+      font-weight: 700;
+    }
+    .row.subtotal .label { color: var(--text); }
+
+    .option-total {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1rem 1.25rem;
+      border: 2.5px solid transparent;
+      transition: border-color 0.3s;
+    }
+    .option-total.winner { border-color: var(--green); }
+    .option-total.loser { border-color: var(--red-light); }
+    .option-total .row {
+      font-size: 1.1rem;
+      padding: 0;
+    }
+    .option-total .row .label { color: var(--text); font-weight: 700; }
+    .option-total .row .value { font-weight: 800; }
+
+    .add-segment-btn {
+      background: none;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .add-segment-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .duration-warning {
+      font-size: 0.8rem;
+      color: var(--red);
+      font-weight: 600;
+      padding: 0.4rem 0;
+    }
+    .duration-error input {
+      border-color: var(--red) !important;
+      background: var(--red-light);
+    }
+    .tab-group {
+      width: 100%;
+    }
+    .tab-buttons {
+      display: flex;
+    }
+    .tab-buttons button {
+      flex: 1;
+      padding: 0.45rem 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: inherit;
+      border: 1.5px solid var(--border);
+      border-bottom: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+      transition: color 0.15s;
+    }
+    .tab-buttons button + button {
+      margin-left: -1.5px;
+    }
+    .tab-buttons button:hover {
+      color: var(--text);
+    }
+    .tab-buttons button.active {
+      color: var(--accent);
+      background: var(--card-bg);
+      border-bottom: 1.5px solid var(--card-bg);
+      z-index: 1;
+    }
+    .tab-content {
+      padding: 0.6rem;
+      border: 1.5px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+    }
+    .gap-segment {
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      box-shadow: none;
+    }
+    .segment-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .segment-actions button {
+      flex: 1;
+    }
+
+    .ranking {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .ranking h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+    .ranking-item {
+      display: flex;
+      align-items: baseline;
+      padding: 0.4rem 0;
+      font-size: 0.95rem;
+      gap: 0.5rem;
+    }
+    .ranking-item + .ranking-item {
+      border-top: 1px solid var(--border);
+    }
+    .ranking-rank {
+      font-weight: 800;
+      color: var(--text-muted);
+      min-width: 1.5rem;
+    }
+    .ranking-item:first-child .ranking-rank {
+      color: var(--green);
+    }
+    .ranking-name {
+      font-weight: 600;
+      flex: 1;
+    }
+    .ranking-cost {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .ranking-diff {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+    }
+    .ranking-item:first-child .ranking-diff {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 700px) {
+      .shared-grid { grid-template-columns: 1fr 1fr; }
+      .input-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CarMath</h1>
+  <p>Compare the true cost of different vehicle plans over time</p>
+</header>
+
+<details class="explainer">
+  <summary>How does this calculator work?</summary>
+  <div class="explainer-content">
+    <h3>The problem</h3>
+    <p>Deciding whether to keep your car, repair it, or buy something new is tricky. The sticker price is only part of the story — gas, insurance, maintenance, loan interest, and depreciation all add up over time. It's hard to compare options when costs happen at different times.</p>
+
+    <h3>What this calculator does</h3>
+    <p>CarMath converts all future costs into today's dollars using a concept called <strong>present value</strong>. The idea is simple: $1,000 five years from now is worth less than $1,000 today, because you could invest that money and earn a return in the meantime. This calculator applies that logic to every cost — gas, maintenance, insurance, loan payments, and resale value — so you can compare options on a level playing field.</p>
+
+    <h3>How to use it</h3>
+    <p>Set your assumptions at the top (gas price, how far you drive, and how many years you want to plan for). Then fill in the details for each option. You can chain multiple cars together if you expect to switch partway through, or add a gap period if you plan to go without a car for a while. The ranking at the bottom shows which plan costs the least in today's dollars.</p>
+
+    <h3>Tips</h3>
+    <p>Don't worry about getting every number perfect — reasonable estimates are fine. Try changing the inputs to see how sensitive the result is. If a small change flips the ranking, the options are close enough that other factors (reliability, comfort, lifestyle) should drive your decision.</p>
+  </div>
+</details>
+
+<section class="shared-inputs">
+  <h2>Assumptions</h2>
+  <div class="shared-grid">
+    <div class="field">
+      <label for="gasPrice">Gas Price ($/L)<span class="info-tip">?<span class="tip-text">The current price you pay per litre of gas at the pump.</span></span></label>
+      <input type="number" id="gasPrice" value="" placeholder="e.g. 1.80" step="0.01" min="0">
+    </div>
+    <div class="field">
+      <label for="annualKm">Annual Distance (km)<span class="info-tip">?<span class="tip-text">How many kilometres you expect to drive per year.</span></span></label>
+      <input type="number" id="annualKm" value="" placeholder="e.g. 20000" step="1000" min="0">
+    </div>
+    <div class="field">
+      <label for="years">Time Horizon (years)<span class="info-tip">?<span class="tip-text">The total number of years you want to compare costs over.</span></span></label>
+      <input type="number" id="years" value="" placeholder="e.g. 5" step="1" min="0" max="30">
+    </div>
+    <div class="field">
+      <label for="rate">Expected Return on Savings (%)<span class="info-tip">?<span class="tip-text">The annual return you could earn if you invested the money instead of spending it on a car. A savings account might be 2-3%, investments 5-7%.</span></span></label>
+      <input type="number" id="rate" value="" placeholder="e.g. 4" step="0.5" min="0" max="50">
+    </div>
+  </div>
+</section>
+
+<div class="toolbar">
+  <button class="toolbar-btn" id="saveFileBtn">Save to File</button>
+  <button class="toolbar-btn" id="loadFileBtn">Load from File</button>
+  <input type="file" id="fileInput" accept=".json">
+  <div class="toolbar-divider"></div>
+  <button class="toolbar-btn" id="shareUrlBtn">Copy Share Link</button>
+  <span class="toolbar-status" id="toolbarStatus"></span>
+</div>
+
+<div class="options-wrapper">
+  <div class="scroll-fade scroll-fade-left"><span class="scroll-arrow">←</span></div>
+  <div class="options" id="optionsContainer"></div>
+  <div class="scroll-fade scroll-fade-right"><span class="scroll-arrow">→</span></div>
+</div>
+
+<div class="ranking" id="ranking"></div>
+
+<footer>
+  <p>All recurring costs are converted to present value using the annuity formula: PV = Payment &times; (1 &minus; (1+r)<sup>&minus;n</sup>) / r</p>
+  <p>Costs for later cars are discounted to today based on when that car period begins.</p>
+  <p>Total = &sum; per car: Down Payment + Upfront + PV(Loan) + PV(Gas) + PV(Maintenance) + PV(Insurance) &minus; PV(Residual Value)</p>
+</footer>
+
+<script>
+  // ── Financial helpers ──
+  function annuityFactor(r, n) {
+    if (n <= 0) return 0;
+    if (r === 0) return n;
+    return (1 - Math.pow(1 + r, -n)) / r;
+  }
+
+  // PV of an annuity that starts at year `startYear` and runs for `n` years
+  function deferredAnnuityPV(payment, r, n, startYear) {
+    if (n <= 0 || payment === 0) return 0;
+    const af = annuityFactor(r, n);
+    const pvAtStart = payment * af;
+    return pvAtStart / Math.pow(1 + r, startYear);
+  }
+
+  // PV of a lump sum at a future year
+  function lumpSumPV(amount, r, year) {
+    if (amount === 0) return 0;
+    return amount / Math.pow(1 + r, year);
+  }
+
+  function calcYearlyLoanPayment(principal, annualRate, termYears) {
+    if (principal <= 0) return 0;
+    if (annualRate === 0) return principal / termYears;
+    return principal * annualRate / (1 - Math.pow(1 + annualRate, -termYears));
+  }
+
+  function calcSegment(seg, shared, startYear) {
+    if (seg.type === 'gap') {
+      const r = shared.r;
+      const n = seg.duration;
+      const yearlyTransport = (seg.monthlyTransport || 0) * 12;
+      const pvTransport = deferredAnnuityPV(yearlyTransport, r, n, startYear);
+      return { isGap: true, yearlyTransport, pvTransport, subtotal: pvTransport };
+    }
+    const n = seg.duration;
+    const yearlyGas = (shared.annualKm / 100) * seg.fuelEconomy * shared.gasPrice;
+    const r = shared.r;
+
+    // Residual value: either entered directly or estimated from depreciation
+    let futureValue;
+    if (seg.residualMethod === 'depreciation') {
+      futureValue = seg.price * Math.pow(1 - seg.depreciationRate / 100, n);
+    } else {
+      futureValue = seg.futureValue;
+    }
+
+    const pvGas = deferredAnnuityPV(yearlyGas, r, n, startYear);
+    const pvMaint = deferredAnnuityPV(seg.maintenance, r, n, startYear);
+    const pvIns = deferredAnnuityPV(seg.insurance, r, n, startYear);
+    const pvFuture = lumpSumPV(futureValue, r, startYear + n);
+
+    let pvLoan = 0;
+    let pvDownPayment = 0;
+    let pvPrice = 0;
+
+    if (seg.hasLoan) {
+      const loanAmount = Math.max(0, seg.price - seg.downPayment);
+      const loanTerm = Math.min(seg.loanTerm, n);
+      const yearlyPayment = calcYearlyLoanPayment(loanAmount, seg.loanRate / 100, loanTerm);
+      pvLoan = deferredAnnuityPV(yearlyPayment, r, loanTerm, startYear);
+      pvDownPayment = lumpSumPV(seg.downPayment, r, startYear);
+    } else {
+      pvPrice = lumpSumPV(seg.price, r, startYear);
+    }
+
+    const pvUpfront = lumpSumPV(seg.upfront, r, startYear);
+
+    const subtotal = pvPrice + pvDownPayment + pvUpfront + pvLoan + pvGas + pvMaint + pvIns - pvFuture;
+    return { hasLoan: seg.hasLoan, futureValue, yearlyGas, pvGas, pvMaint, pvIns, pvFuture, pvLoan, pvDownPayment, pvPrice, pvUpfront, subtotal };
+  }
+
+  const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
+
+  // ── Data model ──
+  const state = {
+    clipboard: null,
+    options: []
+  };
+
+  function readShared() {
+    return {
+      gasPrice: parseFloat(document.getElementById('gasPrice').value) || 0,
+      annualKm: parseFloat(document.getElementById('annualKm').value) || 0,
+      n: parseInt(document.getElementById('years').value) || 0,
+      r: (parseFloat(document.getElementById('rate').value) || 0) / 100,
+    };
+  }
+
+  // ── Rendering ──
+  const tooltips = {
+    gasPrice: 'The current price you pay per litre of gas at the pump.',
+    annualKm: 'How many kilometres you expect to drive per year.',
+    years: 'The total number of years you want to compare costs over.',
+    rate: 'The annual return you could earn if you invested the money instead of spending it on a car. A savings account might be 2-3%, investments 5-7%.',
+    duration: 'How many years you plan to own or use this car before switching.',
+    price: 'The purchase price of the car. For your current car, use what you could sell it for today.',
+    upfront: 'Any immediate one-time costs like repairs, registration fees, taxes, or dealer fees.',
+    futureValue: 'What you expect the car to be worth when you sell or trade it in at the end of this period.',
+    residualMethod: 'Choose how to estimate what the car will be worth later — enter a dollar amount directly, or let the calculator estimate it from a yearly depreciation rate.',
+    depreciationRate: 'The percentage of value the car loses each year. New cars typically lose 15-20% per year, older cars 10-15%.',
+    fuelEconomy: 'How much fuel the car uses per 100 km. Lower is better. Check your car\'s specs or track it at the pump.',
+    maintenance: 'Expected yearly spending on oil changes, tires, brakes, repairs, and other upkeep.',
+    insurance: 'The total annual cost of car insurance for this vehicle.',
+    downPayment: 'The amount you pay upfront when buying the car, before financing the rest.',
+    loanRate: 'The annual interest rate on your car loan.',
+    loanTerm: 'How many years you have to pay off the loan.',
+    monthlyTransport: 'Your expected monthly spending on getting around without a car — transit passes, rideshare, bike share, taxis, etc.',
+  };
+
+  function fieldHTML(optIdx, segIdx, key, label, value, attrs = '') {
+    const tip = tooltips[key] ? `<span class="info-tip">?<span class="tip-text">${tooltips[key]}</span></span>` : '';
+    return `<div class="field">
+      <label>${label}${tip}</label>
+      <input type="number" data-opt="${optIdx}" data-seg="${segIdx}" data-key="${key}" value="${value}" ${attrs}>
+    </div>`;
+  }
+
+  function renderSegment(optIdx, segIdx, seg, canRemove, startYear) {
+    if (seg.type === 'gap') return renderGap(optIdx, segIdx, seg, canRemove, startYear);
+
+    const endYear = startYear + seg.duration;
+    const removeBtn = canRemove
+      ? `<button class="remove-btn" data-opt="${optIdx}" data-seg="${segIdx}">✕</button>`
+      : '';
+    const timeRange = startYear === 0
+      ? `Today – Year ${endYear}`
+      : `Year ${startYear} – Year ${endYear}`;
+    return `
+    <div class="segment" id="seg-${optIdx}-${segIdx}">
+      <div class="segment-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <input type="text" data-opt="${optIdx}" data-seg="${segIdx}" data-key="label"
+            value="${seg.label}" style="font-size:1rem;font-weight:600;border:none;border-bottom:1.5px dashed var(--border);padding:0;background:transparent;min-width:80px;width:auto;flex:1;">
+          <div style="display:flex;gap:0.4rem;flex-shrink:0;margin-left:0.5rem;">
+            <button class="copy-seg-btn" data-opt="${optIdx}" data-seg="${segIdx}">Copy</button>
+            <button class="copy-seg-btn" data-opt="${optIdx}" data-seg="${segIdx}" data-move="true">Move</button>
+            ${removeBtn}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.4rem;">
+          <div style="display:flex;align-items:center;gap:0.4rem;">
+            <span style="font-size:0.8rem;font-weight:600;color:var(--text-muted);">Duration</span>
+            <input type="number" data-opt="${optIdx}" data-seg="${segIdx}" data-key="duration"
+              value="${seg.duration}" step="1" min="1" max="30"
+              style="width:3.5rem;padding:0.2rem 0.3rem;font-size:0.85rem;border:1.5px solid var(--border);border-radius:4px;text-align:center;">
+            <span style="font-size:0.8rem;color:var(--text-muted);">years</span>
+            <span class="info-tip">?<span class="tip-text">${tooltips.duration}</span></span>
+          </div>
+          <span style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;">(${timeRange})</span>
+        </div>
+      </div>
+      <div class="inputs">
+        <div class="input-row">
+          ${fieldHTML(optIdx, segIdx, 'price', 'Price of Car ($)', seg.price, 'step="500"')}
+        </div>
+        <div class="input-row">
+          ${fieldHTML(optIdx, segIdx, 'upfront', 'Upfront Costs ($)', seg.upfront, 'step="500" min="0"')}
+        </div>
+        <div style="margin-top:0.5rem;">
+          <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:0.25rem;display:flex;align-items:center;gap:0.3rem;">Residual Value<span class="info-tip">?<span class="tip-text">${tooltips.residualMethod}</span></span></label>
+          <div class="tab-group">
+            <div class="tab-buttons">
+              <button data-opt="${optIdx}" data-seg="${segIdx}" data-residual="direct" class="${seg.residualMethod === 'direct' ? 'active' : ''}">Enter directly</button>
+              <button data-opt="${optIdx}" data-seg="${segIdx}" data-residual="depreciation" class="${seg.residualMethod === 'depreciation' ? 'active' : ''}">Estimate from depreciation</button>
+            </div>
+            <div class="tab-content">
+              ${seg.residualMethod === 'direct' ? `
+              ${fieldHTML(optIdx, segIdx, 'futureValue', 'Value ($)', seg.futureValue, 'step="500" min="0"')}
+              ` : `
+              <div class="input-row">
+                ${fieldHTML(optIdx, segIdx, 'depreciationRate', 'Yearly Depreciation (%)', seg.depreciationRate, 'step="1" min="0" max="100"')}
+                <div class="field">
+                  <label>Estimated Value</label>
+                  <input type="text" disabled value="${fmt.format(seg.price * Math.pow(1 - seg.depreciationRate / 100, seg.duration))}"
+                    style="background:var(--bg);color:var(--text-muted);">
+                </div>
+              </div>
+              `}
+            </div>
+          </div>
+        </div>
+        <div class="input-row">
+          ${fieldHTML(optIdx, segIdx, 'fuelEconomy', 'Fuel Economy (L/100km)', seg.fuelEconomy, 'step="0.5" min="0"')}
+          ${fieldHTML(optIdx, segIdx, 'maintenance', 'Yearly Maintenance ($)', seg.maintenance, 'step="100" min="0"')}
+        </div>
+        <div class="input-row">
+          ${fieldHTML(optIdx, segIdx, 'insurance', 'Yearly Insurance ($)', seg.insurance, 'step="100" min="0"')}
+        </div>
+        <div style="margin-top:0.5rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;font-weight:600;color:var(--text-muted);cursor:pointer;">
+            <input type="checkbox" data-opt="${optIdx}" data-seg="${segIdx}" data-key="hasLoan" ${seg.hasLoan ? 'checked' : ''}>
+            Financing with a loan
+          </label>
+        </div>
+        ${seg.hasLoan ? `
+        <div class="input-row" style="margin-top:0.5rem;">
+          ${fieldHTML(optIdx, segIdx, 'downPayment', 'Down Payment ($)', seg.downPayment, 'step="500" min="0"')}
+          ${fieldHTML(optIdx, segIdx, 'loanRate', 'Loan Rate (%)', seg.loanRate, 'step="0.5" min="0" max="30"')}
+        </div>
+        <div class="input-row">
+          ${fieldHTML(optIdx, segIdx, 'loanTerm', 'Loan Term (years)', seg.loanTerm, 'step="1" min="1" max="10"')}
+        </div>
+        ` : ''}
+      </div>
+      <div class="breakdown" id="breakdown-${optIdx}-${segIdx}"></div>
+    </div>`;
+  }
+
+  function renderGap(optIdx, segIdx, seg, canRemove, startYear) {
+    const endYear = startYear + seg.duration;
+    const removeBtn = canRemove
+      ? `<button class="remove-btn" data-opt="${optIdx}" data-seg="${segIdx}">✕</button>`
+      : '';
+    const timeRange = startYear === 0
+      ? `Today – Year ${endYear}`
+      : `Year ${startYear} – Year ${endYear}`;
+    return `
+    <div class="segment gap-segment" id="seg-${optIdx}-${segIdx}">
+      <div class="segment-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <span style="font-size:1rem;font-weight:600;">No Car</span>
+          <div style="display:flex;gap:0.4rem;flex-shrink:0;margin-left:0.5rem;">
+            <button class="copy-seg-btn" data-opt="${optIdx}" data-seg="${segIdx}">Copy</button>
+            <button class="copy-seg-btn" data-opt="${optIdx}" data-seg="${segIdx}" data-move="true">Move</button>
+            ${removeBtn}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.4rem;">
+          <div style="display:flex;align-items:center;gap:0.4rem;">
+            <span style="font-size:0.8rem;font-weight:600;color:var(--text-muted);">Duration</span>
+            <input type="number" data-opt="${optIdx}" data-seg="${segIdx}" data-key="duration"
+              value="${seg.duration}" step="1" min="1" max="30"
+              style="width:3.5rem;padding:0.2rem 0.3rem;font-size:0.85rem;border:1.5px solid var(--border);border-radius:4px;text-align:center;">
+            <span style="font-size:0.8rem;color:var(--text-muted);">years</span>
+            <span class="info-tip">?<span class="tip-text">How long you expect to go without a car before getting your next one.</span></span>
+          </div>
+          <span style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;">(${timeRange})</span>
+        </div>
+      </div>
+      <div class="inputs">
+        <div class="input-row">
+          ${fieldHTML(optIdx, segIdx, 'monthlyTransport', 'Monthly Transportation ($)', seg.monthlyTransport || 0, 'step="50" min="0"')}
+        </div>
+      </div>
+      <div style="color:var(--text-muted);font-size:0.8rem;font-style:italic;margin-top:0.25rem;">Transit passes, rideshare, etc.</div>
+      <div class="breakdown" id="breakdown-${optIdx}-${segIdx}"></div>
+    </div>`;
+  }
+
+  function pasteBtn(optIdx, position) {
+    if (!state.clipboard) return '';
+    const label = state.clipboard.seg.label || 'No Car';
+    const action = state.clipboard.isMove ? 'Move' : 'Paste';
+    return `<div style="display:flex;gap:0.5rem;">
+      <button class="paste-btn" data-paste-opt="${optIdx}" data-paste-pos="${position}" style="flex:1;">${action} "${label}" here</button>
+      <button class="paste-btn cancel-paste" style="flex:0;padding:0.35rem 0.6rem;border-color:var(--red);color:var(--red);">✕</button>
+    </div>`;
+  }
+
+  function renderOption(optIdx, option) {
+    let startYear = 0;
+    const segmentParts = [];
+    segmentParts.push(pasteBtn(optIdx, 0));
+    option.segments.forEach((seg, segIdx) => {
+      const html = renderSegment(optIdx, segIdx, seg, true, startYear);
+      startYear += seg.duration;
+      segmentParts.push(html);
+      segmentParts.push(pasteBtn(optIdx, segIdx + 1));
+    });
+    const segmentsHTML = segmentParts.join('');
+
+    const removeOptionBtn = `<button class="remove-option-btn" data-remove-opt="${optIdx}">✕</button>`;
+    return `
+    <div class="option" id="option-${optIdx}">
+      <div class="option-header">
+        <input type="text" data-opt="${optIdx}" data-key="name" value="${option.name}"
+          style="font-size:1.15rem;font-weight:700;width:100%;">
+        <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+          <button class="copy-seg-btn" data-dup-opt="${optIdx}">Duplicate</button>
+          ${removeOptionBtn}
+        </div>
+      </div>
+      <textarea data-opt="${optIdx}" data-key="notes" placeholder="Add notes about this option..."
+        style="width:100%;font-family:inherit;font-size:0.85rem;color:var(--text-muted);border:1.5px solid var(--border);border-radius:6px;padding:0.4rem 0.6rem;resize:vertical;min-height:2.2rem;max-height:8rem;background:var(--card-bg);">${option.notes || ''}</textarea>
+      ${segmentsHTML}
+      <div class="segment-actions">
+        <button class="add-segment-btn" data-opt="${optIdx}" data-type="car">+ Add Car</button>
+        <button class="add-segment-btn" data-opt="${optIdx}" data-type="gap">+ Add Gap</button>
+      </div>
+      <div class="option-total" id="total-${optIdx}">
+        <div class="row">
+          <span class="label">Total Present Cost</span>
+          <span class="value" id="optTotal-${optIdx}"></span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function updateScrollHint() {
+    const wrapper = document.querySelector('.options-wrapper');
+    const hasOverflow = wrapper.scrollWidth > wrapper.clientWidth;
+    const scrolledToEnd = wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 10;
+    const scrolledFromStart = wrapper.scrollLeft > 10;
+    wrapper.classList.toggle('overflow-right', hasOverflow && !scrolledToEnd);
+    wrapper.classList.toggle('overflow-left', hasOverflow && scrolledFromStart);
+  }
+
+  function render() {
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = state.options.map((opt, i) => renderOption(i, opt)).join('')
+      + '<button class="add-option-btn" id="addOptionBtn">+ Add Option</button>';
+    container.classList.toggle('single-option', state.options.length === 1);
+    attachListeners();
+    recalculate();
+    requestAnimationFrame(updateScrollHint);
+  }
+
+  document.querySelector('.options-wrapper').addEventListener('scroll', updateScrollHint);
+
+  function attachListeners() {
+    // Number/text inputs
+    document.querySelectorAll('.options input[data-key]').forEach(input => {
+      const key = input.dataset.key;
+      if (key === 'hasLoan') {
+        input.addEventListener('change', (e) => {
+          const optIdx = parseInt(e.target.dataset.opt);
+          const segIdx = parseInt(e.target.dataset.seg);
+          state.options[optIdx].segments[segIdx].hasLoan = e.target.checked;
+          render();
+        });
+      } else {
+        input.addEventListener('input', (e) => {
+          const optIdx = parseInt(e.target.dataset.opt);
+          const segIdx = e.target.dataset.seg !== undefined ? parseInt(e.target.dataset.seg) : null;
+
+          if (key === 'name') {
+            state.options[optIdx].name = e.target.value;
+            recalculate();
+          } else if (key === 'label') {
+            state.options[optIdx].segments[segIdx].label = e.target.value;
+            recalculate();
+          } else if (segIdx !== null) {
+            state.options[optIdx].segments[segIdx][key] = parseFloat(e.target.value) || 0;
+            if (key === 'duration' || key === 'price' || key === 'depreciationRate') {
+              render();
+            } else {
+              recalculate();
+            }
+          }
+        });
+      }
+    });
+
+    // Notes textareas
+    document.querySelectorAll('textarea[data-key="notes"]').forEach(ta => {
+      ta.addEventListener('input', (e) => {
+        const optIdx = parseInt(e.target.dataset.opt);
+        state.options[optIdx].notes = e.target.value;
+      });
+    });
+
+    // Residual method toggle
+    document.querySelectorAll('[data-residual]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const optIdx = parseInt(e.target.dataset.opt);
+        const segIdx = parseInt(e.target.dataset.seg);
+        state.options[optIdx].segments[segIdx].residualMethod = e.target.dataset.residual;
+        render();
+      });
+    });
+
+    // Add segment buttons
+    document.querySelectorAll('.add-segment-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const optIdx = parseInt(e.target.dataset.opt);
+        const segType = e.target.dataset.type;
+        if (segType === 'gap') {
+          state.options[optIdx].segments.push({
+            type: 'gap', label: 'No Car', duration: 0, monthlyTransport: 0,
+          });
+        } else {
+          state.options[optIdx].segments.push({
+            type: 'car',
+            label: 'Car', duration: 0, price: 0, upfront: 0, futureValue: 0,
+            residualMethod: 'direct', depreciationRate: 0,
+            fuelEconomy: 0, maintenance: 0, insurance: 0,
+            hasLoan: false, downPayment: 0, loanRate: 0, loanTerm: 5,
+          });
+        }
+        render();
+      });
+    });
+
+    // Remove segment buttons
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const optIdx = parseInt(e.target.dataset.opt);
+        const segIdx = parseInt(e.target.dataset.seg);
+        state.options[optIdx].segments.splice(segIdx, 1);
+        render();
+      });
+    });
+
+    // Copy segment buttons
+    document.querySelectorAll('.copy-seg-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const optIdx = parseInt(e.target.dataset.opt);
+        const segIdx = parseInt(e.target.dataset.seg);
+        const isMove = e.target.dataset.move === 'true';
+        state.clipboard = {
+          seg: { ...state.options[optIdx].segments[segIdx] },
+          isMove,
+          sourceOpt: optIdx,
+          sourceSeg: segIdx,
+        };
+        render();
+      });
+    });
+
+    // Cancel paste buttons
+    document.querySelectorAll('.cancel-paste').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.clipboard = null;
+        render();
+      });
+    });
+
+    // Paste buttons
+    document.querySelectorAll('.paste-btn:not(.cancel-paste)').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const optIdx = parseInt(e.target.dataset.pasteOpt);
+        const position = parseInt(e.target.dataset.pastePos);
+        const { seg, isMove, sourceOpt, sourceSeg } = state.clipboard;
+
+        if (isMove) {
+          // Remove from source first
+          state.options[sourceOpt].segments.splice(sourceSeg, 1);
+          // Adjust paste position if it's in the same option and after the removed index
+          let adjustedPos = position;
+          if (optIdx === sourceOpt && position > sourceSeg) {
+            adjustedPos--;
+          }
+          state.options[optIdx].segments.splice(adjustedPos, 0, { ...seg });
+        } else {
+          state.options[optIdx].segments.splice(position, 0, { ...seg });
+        }
+
+        state.clipboard = null;
+        render();
+      });
+    });
+
+    // Duplicate option buttons
+    document.querySelectorAll('[data-dup-opt]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const optIdx = parseInt(e.target.dataset.dupOpt);
+        const original = state.options[optIdx];
+        state.options.splice(optIdx + 1, 0, {
+          name: `${original.name} (copy)`,
+          notes: original.notes || '',
+          segments: original.segments.map(seg => ({ ...seg })),
+        });
+        render();
+      });
+    });
+
+    // Remove option buttons
+    document.querySelectorAll('.remove-option-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (state.options.length < 1) return;
+        const optIdx = parseInt(e.target.dataset.removeOpt);
+        state.options.splice(optIdx, 1);
+        render();
+      });
+    });
+
+    // Add option button
+    const addBtn = document.getElementById('addOptionBtn');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const n = state.options.length;
+        state.options.push({
+          name: `Option ${String.fromCharCode(65 + n)}`, notes: '',
+          segments: []
+        });
+        render();
+      });
+    }
+  }
+
+  function recalculate() {
+    const shared = readShared();
+    const optionTotals = [];
+
+    let anyMismatch = false;
+    state.options.forEach((option, optIdx) => {
+      let startYear = 0;
+      let optionTotal = 0;
+      const totalDuration = option.segments.reduce((sum, s) => sum + (s.duration || 0), 0);
+
+      option.segments.forEach((seg, segIdx) => {
+        const result = calcSegment(seg, shared, startYear);
+        optionTotal += result.subtotal;
+
+        if (result.isGap) {
+          const bd = document.getElementById(`breakdown-${optIdx}-${segIdx}`);
+          if (bd) {
+            const startLabel = startYear === 0 ? 'Today' : `Year ${startYear}`;
+            const endLabel = `Year ${startYear + seg.duration}`;
+            bd.innerHTML = result.pvTransport > 0 ? `
+              <h4>Present Value Costs</h4>
+              <div class="row"><span class="label">PV of Transportation</span><span class="value">${fmt.format(result.pvTransport)}</span></div>
+              <div class="row subtotal"><span class="label">Subtotal</span><span class="value">${fmt.format(result.subtotal)}</span></div>
+            ` : '';
+          }
+        } else {
+          const bd = document.getElementById(`breakdown-${optIdx}-${segIdx}`);
+          if (bd) {
+            const startLabel = startYear === 0 ? 'Today' : `Year ${startYear}`;
+            const endLabel = `Year ${startYear + seg.duration}`;
+            const priceRows = result.hasLoan
+              ? `<div class="row"><span class="label">PV of Down Payment</span><span class="value">${fmt.format(result.pvDownPayment)}</span></div>
+                 <div class="row"><span class="label">PV of Loan Payments</span><span class="value">${fmt.format(result.pvLoan)}</span></div>`
+              : `<div class="row"><span class="label">PV of Price (paid in full)</span><span class="value">${fmt.format(result.pvPrice)}</span></div>`;
+
+            bd.innerHTML = `
+              <h4>Present Value Costs</h4>
+              <div class="row"><span class="label">PV of Upfront Costs</span><span class="value">${fmt.format(result.pvUpfront)}</span></div>
+              ${priceRows}
+              <div class="row"><span class="label">PV of Gas</span><span class="value">${fmt.format(result.pvGas)}</span></div>
+              <div class="row"><span class="label">PV of Maintenance</span><span class="value">${fmt.format(result.pvMaint)}</span></div>
+              <div class="row"><span class="label">PV of Insurance</span><span class="value">${fmt.format(result.pvIns)}</span></div>
+              <div class="row"><span class="label">PV of Residual Value</span><span class="value">-${fmt.format(result.pvFuture)}</span></div>
+              <div class="row subtotal"><span class="label">Subtotal</span><span class="value">${fmt.format(result.subtotal)}</span></div>
+            `;
+          }
+        }
+
+        startYear += seg.duration;
+      });
+
+      // Duration warning
+      const totalEl = document.getElementById(`total-${optIdx}`);
+      const hasMismatch = shared.n > 0 && totalDuration !== shared.n;
+
+      // Highlight duration inputs
+      option.segments.forEach((_, segIdx) => {
+        const durationField = document.querySelector(`[data-opt="${optIdx}"][data-seg="${segIdx}"][data-key="duration"]`);
+        if (durationField) {
+          const fieldWrapper = durationField.closest('.field');
+          if (fieldWrapper) {
+            fieldWrapper.classList.toggle('duration-error', hasMismatch);
+          } else {
+            durationField.style.borderColor = hasMismatch ? 'var(--red)' : '';
+            durationField.style.background = hasMismatch ? 'var(--red-light)' : '';
+          }
+        }
+      });
+
+      // Highlight time horizon input
+      const horizonInput = document.getElementById('years');
+      // Only add error class if ANY option has a mismatch (handled after loop)
+
+      if (totalEl && hasMismatch) {
+        const msg = `Segments total ${totalDuration} years — adjust durations to match the ${shared.n}-year time horizon`;
+        const existing = totalEl.querySelector('.duration-warning');
+        if (!existing) {
+          totalEl.insertAdjacentHTML('afterbegin', `<div class="duration-warning">${msg}</div>`);
+        } else {
+          existing.textContent = msg;
+        }
+      } else if (totalEl) {
+        const existing = totalEl.querySelector('.duration-warning');
+        if (existing) existing.remove();
+      }
+
+      if (hasMismatch) anyMismatch = true;
+
+      const totalValueEl = document.getElementById(`optTotal-${optIdx}`);
+      if (totalValueEl) totalValueEl.textContent = fmt.format(optionTotal);
+
+      optionTotals.push(optionTotal);
+    });
+
+    // Highlight time horizon input if any option has a mismatch
+    document.getElementById('years').closest('.field').classList.toggle('duration-error', anyMismatch);
+
+    // Ranking
+    const ranking = document.getElementById('ranking');
+    document.querySelectorAll('.option-total').forEach(el => el.classList.remove('winner', 'loser'));
+
+    if (optionTotals.length < 2) {
+      ranking.innerHTML = '';
+      return;
+    }
+
+    const ranked = optionTotals
+      .map((total, i) => ({ total, i, name: state.options[i].name }))
+      .sort((a, b) => a.total - b.total);
+
+    const cheapest = ranked[0].total;
+
+    ranked.forEach((item, rank) => {
+      const el = document.getElementById(`total-${item.i}`);
+      if (el) el.classList.add(rank === 0 ? 'winner' : 'loser');
+    });
+
+    const itemsHTML = ranked.map((item, rank) => {
+      const diff = item.total - cheapest;
+      const diffLabel = rank === 0
+        ? '<span class="ranking-diff">cheapest</span>'
+        : `<span class="ranking-diff">+${fmt.format(diff)}</span>`;
+      return `<div class="ranking-item">
+        <span class="ranking-rank">${rank + 1}.</span>
+        <span class="ranking-name">${item.name}</span>
+        <span class="ranking-cost">${fmt.format(item.total)}</span>
+        ${diffLabel}
+      </div>`;
+    }).join('');
+
+    ranking.innerHTML = `<h3>Ranking</h3>${itemsHTML}`;
+  }
+
+  // Shared input listeners
+  document.querySelectorAll('.shared-inputs input').forEach(input => {
+    input.addEventListener('input', recalculate);
+  });
+
+  // ── Save / Load / Share ──
+  function getSaveData() {
+    return {
+      version: 1,
+      shared: {
+        gasPrice: parseFloat(document.getElementById('gasPrice').value) || 0,
+        annualKm: parseFloat(document.getElementById('annualKm').value) || 0,
+        years: parseInt(document.getElementById('years').value) || 0,
+        rate: parseFloat(document.getElementById('rate').value) || 0,
+      },
+      options: state.options,
+    };
+  }
+
+  function loadSaveData(data) {
+    if (data.shared) {
+      document.getElementById('gasPrice').value = data.shared.gasPrice;
+      document.getElementById('annualKm').value = data.shared.annualKm;
+      document.getElementById('years').value = data.shared.years;
+      document.getElementById('rate').value = data.shared.rate;
+    }
+    state.options = data.options || [];
+    state.clipboard = null;
+    render();
+  }
+
+  function showStatus(msg) {
+    const el = document.getElementById('toolbarStatus');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  // Save to file
+  document.getElementById('saveFileBtn').addEventListener('click', () => {
+    const data = JSON.stringify(getSaveData(), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'carmath-comparison.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showStatus('Saved!');
+  });
+
+  // Load from file
+  document.getElementById('loadFileBtn').addEventListener('click', () => {
+    document.getElementById('fileInput').click();
+  });
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        loadSaveData(data);
+        showStatus('Loaded!');
+      } catch {
+        showStatus('Invalid file');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  // Share via URL
+  document.getElementById('shareUrlBtn').addEventListener('click', () => {
+    const data = getSaveData();
+    const encoded = btoa(encodeURIComponent(JSON.stringify(data)));
+    const url = window.location.origin + window.location.pathname + '#' + encoded;
+    navigator.clipboard.writeText(url).then(() => {
+      showStatus('Link copied!');
+    }).catch(() => {
+      prompt('Copy this link:', url);
+    });
+  });
+
+  // Load from URL hash on page load
+  function loadFromHash() {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return false;
+    try {
+      const data = JSON.parse(decodeURIComponent(atob(hash)));
+      loadSaveData(data);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Initial render
+  if (!loadFromHash()) {
+    render();
+  }
+</script>
+
+</body>
+</html>
