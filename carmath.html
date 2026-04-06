@@ -1011,15 +1011,25 @@
             state.options[optIdx].segments[segIdx].label = e.target.value;
             recalculate();
           } else if (segIdx !== null) {
-            state.options[optIdx].segments[segIdx][key] = parseFloat(e.target.value) || 0;
-            if (key === 'duration' || key === 'price' || key === 'depreciationRate') {
-              render();
-            } else {
-              recalculate();
+            if (key === 'duration') {
+              // Don't update on every keystroke — wait for blur/change
+              return;
             }
+            state.options[optIdx].segments[segIdx][key] = parseFloat(e.target.value) || 0;
+            recalculate();
           }
         });
       }
+    });
+
+    // Duration inputs — update on blur/change, not every keystroke
+    document.querySelectorAll('input[data-key="duration"]').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const optIdx = parseInt(e.target.dataset.opt);
+        const segIdx = parseInt(e.target.dataset.seg);
+        state.options[optIdx].segments[segIdx].duration = parseFloat(e.target.value) || 0;
+        render();
+      });
     });
 
     // Notes textareas
@@ -1204,6 +1214,14 @@
               <div class="row"><span class="label">PV of Residual Value</span><span class="value">-${fmt.format(result.pvFuture)}</span></div>
               <div class="row subtotal"><span class="label">Subtotal</span><span class="value">${fmt.format(result.subtotal)}</span></div>
             `;
+          }
+        }
+
+        // Update estimated residual value if using depreciation
+        if (seg.residualMethod === 'depreciation') {
+          const estInput = document.querySelector(`#seg-${optIdx}-${segIdx} input[disabled]`);
+          if (estInput) {
+            estInput.value = fmt.format(seg.price * Math.pow(1 - seg.depreciationRate / 100, seg.duration));
           }
         }
 
