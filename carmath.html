@@ -726,9 +726,12 @@
 
     if (seg.hasLoan) {
       const loanAmount = Math.max(0, seg.price - seg.downPayment);
-      const loanTerm = Math.min(seg.loanTerm, n);
-      const yearlyPayment = calcYearlyLoanPayment(loanAmount, seg.loanRate / 100, loanTerm);
-      pvLoan = deferredAnnuityPV(yearlyPayment, r, loanTerm, startYear);
+      const loanRate = seg.loanRate / 100;
+      const loanTerm = seg.loanTerm;
+      const yearlyPayment = calcYearlyLoanPayment(loanAmount, loanRate, loanTerm);
+      // Only count payments within the ownership duration
+      const paymentYears = Math.min(loanTerm, n);
+      pvLoan = deferredAnnuityPV(yearlyPayment, r, paymentYears, startYear);
       pvDownPayment = lumpSumPV(seg.downPayment, r, startYear);
     } else {
       pvPrice = lumpSumPV(seg.price, r, startYear);
@@ -871,6 +874,7 @@
         <div class="input-row">
           ${fieldHTML(optIdx, segIdx, 'loanTerm', 'Loan Term (years)', seg.loanTerm, 'step="1" min="1" max="10"')}
         </div>
+        <div class="loan-notice" data-opt="${optIdx}" data-seg="${segIdx}" style="font-size:0.75rem;color:var(--text-muted);font-style:italic;margin-top:0.25rem;display:none;"></div>
         ` : ''}
       </div>
       <div class="breakdown" id="breakdown-${optIdx}-${segIdx}"></div>
@@ -1222,6 +1226,20 @@
           const estInput = document.querySelector(`#seg-${optIdx}-${segIdx} input[disabled]`);
           if (estInput) {
             estInput.value = fmt.format(seg.price * Math.pow(1 - seg.depreciationRate / 100, seg.duration));
+          }
+        }
+
+        // Loan notice when loan term exceeds time horizon
+        if (seg.hasLoan) {
+          const notice = document.querySelector(`.loan-notice[data-opt="${optIdx}"][data-seg="${segIdx}"]`);
+          if (notice) {
+            const paymentYears = Math.min(seg.loanTerm, seg.duration);
+            if (shared.n > 0 && seg.loanTerm > shared.n) {
+              notice.textContent = `Loan term exceeds the ${shared.n}-year time horizon — only ${Math.min(paymentYears, shared.n)} year${Math.min(paymentYears, shared.n) !== 1 ? 's' : ''} of payments are included.`;
+              notice.style.display = 'block';
+            } else {
+              notice.style.display = 'none';
+            }
           }
         }
 
