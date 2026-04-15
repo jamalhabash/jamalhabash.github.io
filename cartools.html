@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Dealership Toolkit</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #131c30;
+    --panel-2: #1b2742;
+    --ink: #e8eefc;
+    --ink-dim: #9aa7c2;
+    --accent: #6ee7b7;
+    --accent-2: #60a5fa;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --good: #34d399;
+    --border: #24324f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-text-size-adjust: 100%; }
+  body { padding-bottom: 88px; }
+  header { padding: 14px 16px 6px; }
+  header h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+  header .sub { font-size: 12px; color: var(--ink-dim); margin-top: 2px; }
+  main { padding: 8px 14px 40px; max-width: 720px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px; margin: 12px 0; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; color: var(--ink); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 420px) { .row { grid-template-columns: 1fr; } }
+  label { font-size: 12px; color: var(--ink-dim); display: block; margin-bottom: 4px; }
+  label .q { display: inline-block; width: 16px; height: 16px; line-height: 15px;
+    text-align: center; border: 1px solid var(--border); border-radius: 50%;
+    color: var(--ink-dim); font-size: 11px; margin-left: 6px; cursor: pointer;
+    background: var(--panel-2); }
+  .field { margin-bottom: 10px; }
+  .field .help { display: none; font-size: 12px; color: var(--ink-dim);
+    background: var(--panel-2); border-left: 2px solid var(--accent-2);
+    padding: 6px 8px; margin-top: 6px; border-radius: 6px; }
+  .field.open .help { display: block; }
+  input[type=number], input[type=text] {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--ink); padding: 10px 12px; border-radius: 10px; font-size: 16px;
+    -moz-appearance: textfield;
+  }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .out { background: var(--panel-2); border-radius: 10px; padding: 10px 12px;
+    margin-top: 6px; }
+  .out .line { display: flex; justify-content: space-between; padding: 4px 0;
+    font-size: 14px; }
+  .out .line b { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .out .line.big { font-size: 18px; padding: 8px 0; border-top: 1px solid var(--border); margin-top: 4px; }
+  .out .line.big b { color: var(--accent); font-size: 20px; }
+  .dim { color: var(--ink-dim); }
+  .warn { color: var(--warn); }
+  .bad  { color: var(--bad); }
+  .good { color: var(--good); }
+  details { background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+  details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  details[open] summary { margin-bottom: 6px; }
+  details p { margin: 6px 0; font-size: 13px; color: var(--ink-dim); }
+  ul.checklist { list-style: none; padding: 0; margin: 0; }
+  ul.checklist li { padding: 8px 0; border-bottom: 1px dashed var(--border);
+    font-size: 13px; color: var(--ink-dim); }
+  ul.checklist li:last-child { border-bottom: 0; }
+  ul.checklist li b { color: var(--ink); display: block; margin-bottom: 2px; }
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(11,18,32,0.96); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border); display: flex; justify-content: space-around;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); z-index: 10; }
+  nav.tabs button { flex: 1; background: transparent; border: 0; color: var(--ink-dim);
+    font-size: 11px; padding: 6px 2px; border-radius: 8px; }
+  nav.tabs button.active { color: var(--accent); background: var(--panel); }
+  nav.tabs button .ico { display: block; font-size: 18px; margin-bottom: 2px; }
+  .pill { display: inline-block; background: var(--panel-2); color: var(--ink-dim);
+    padding: 3px 8px; border-radius: 999px; font-size: 11px; margin-right: 6px; }
+  .pill.good { color: var(--good); }
+  .pill.warn { color: var(--warn); }
+  .pill.bad  { color: var(--bad); }
+  .note { font-size: 12px; color: var(--ink-dim); margin-top: 8px; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Dealership Toolkit</h1>
+  <div class="sub">Lease · Finance · OTD · Glossary · Red flags</div>
+</header>
+
+<main>
+
+<!-- LEASE -->
+<section id="tab-lease" class="tab active">
+  <div class="card">
+    <h2>Lease calculator</h2>
+    <div class="row">
+      <div class="field">
+        <label>MSRP ($) <span class="q">?</span></label>
+        <input type="number" id="l_msrp" inputmode="decimal">
+        <div class="help">Sticker price. Residual % is applied to this number — selling price does not change the residual.</div>
+      </div>
+      <div class="field">
+        <label>Selling price ($) <span class="q">?</span></label>
+        <input type="number" id="l_sell" inputmode="decimal">
+        <div class="help">The negotiated price of the car before fees. This is your primary negotiation target — not the monthly payment.</div>
+      </div>
+      <div class="field">
+        <label>Residual % <span class="q">?</span></label>
+        <input type="number" id="l_res" inputmode="decimal" step="0.1">
+        <div class="help">% of MSRP the car is worth at lease end. Set by the bank. Higher residual = lower payment. You cannot negotiate this.</div>
+      </div>
+      <div class="field">
+        <label>Money factor <span class="q">?</span></label>
+        <input type="number" id="l_mf" inputmode="decimal" step="0.00001">
+        <div class="help">The lease's interest rate, expressed as a small decimal like .00125. Multiply by 2400 for APR equivalent. Ask for the "buy rate" — dealers mark it up.</div>
+      </div>
+      <div class="field">
+        <label>Term (months) <span class="q">?</span></label>
+        <input type="number" id="l_term" inputmode="numeric">
+        <div class="help">Length of the lease. 36 is standard. Longer terms usually mean higher money factor and you leave warranty.</div>
+      </div>
+      <div class="field">
+        <label>Down / cap reduction ($) <span class="q">?</span></label>
+        <input type="number" id="l_down" inputmode="decimal">
+        <div class="help">Money down on a lease is risky: if the car is totaled in month 2, gap covers the bank, not your down payment. Many experts recommend $0 down leases.</div>
+      </div>
+      <div class="field">
+        <label>Acquisition fee ($) <span class="q">?</span></label>
+        <input type="number" id="l_acq" inputmode="decimal">
+        <div class="help">Bank fee to originate the lease. Usually $595–$995. Non-negotiable but should not be duplicated as another line item.</div>
+      </div>
+      <div class="field">
+        <label>Doc + other fees ($) <span class="q">?</span></label>
+        <input type="number" id="l_doc" inputmode="decimal">
+        <div class="help">Dealer doc fee (state-capped in many states), title, registration. Doc fees above ~$500 are suspect in most states.</div>
+      </div>
+      <div class="field">
+        <label>Sales tax % <span class="q">?</span></label>
+        <input type="number" id="l_tax" inputmode="decimal" step="0.01">
+        <div class="help">In most states, lease tax is applied to the monthly payment only. Some states (TX, IL, etc.) tax the full price up front.</div>
+      </div>
+      <div class="field">
+        <label>Trade-in equity ($) <span class="q">?</span></label>
+        <input type="number" id="l_trade" inputmode="decimal">
+        <div class="help">Positive equity reduces cap cost. Negotiate trade-in AFTER you have settled on selling price — never bundle.</div>
+      </div>
+    </div>
+    <div class="out" id="l_out"></div>
+    <div class="note">Pre-tax monthly = (cap cost − residual $) / term + (cap cost + residual $) × MF.
+      <br>Rule of thumb: a good lease has monthly ≤ 1% of MSRP.</div>
+  </div>
+</section>
+
+<!-- MONEY FACTOR -->
+<section id="tab-mf" class="tab">
+  <div class="card">
+    <h2>Money factor ↔ APR</h2>
+    <div class="row">
+      <div class="field">
+        <label>Money factor</label>
+        <input type="number" id="mf_mf" inputmode="decimal" step="0.00001">
+      </div>
+      <div class="field">
+        <label>Equivalent APR %</label>
+        <input type="number" id="mf_apr" inputmode="decimal" step="0.01">
+      </div>
+    </div>
+    <div class="note">MF × 2400 = APR. If the dealer quotes you an APR for a lease, divide by 2400 to see the MF they are entering into the system.</div>
+  </div>
+
+  <div class="card">
+    <h2>Compare two money factors</h2>
+    <div class="row">
+      <div class="field">
+        <label>MF #1</label>
+        <input type="number" id="cmp_mf1" inputmode="decimal" step="0.00001" value="0.00150">
+      </div>
+      <div class="field">
+        <label>MF #2</label>
+        <input type="number" id="cmp_mf2" inputmode="decimal" step="0.00001" value="0.00125">
+      </div>
+      <div class="field">
+        <label>Cap cost ($)</label>
+        <input type="number" id="cmp_cap" inputmode="decimal" value="40000">
+      </div>
+      <div class="field">
+        <label>Residual ($)</label>
+        <input type="number" id="cmp_res" inputmode="decimal" value="24000">
+      </div>
+      <div class="field">
+        <label>Term (months)</label>
+        <input type="number" id="cmp_term" inputmode="numeric" value="36">
+      </div>
+    </div>
+    <div class="out" id="cmp_out"></div>
+  </div>
+</section>
+
+<!-- FINANCE -->
+<section id="tab-fin" class="tab">
+  <div class="card">
+    <h2>Finance calculator</h2>
+    <div class="row">
+      <div class="field">
+        <label>Vehicle price ($) <span class="q">?</span></label>
+        <input type="number" id="f_price" inputmode="decimal">
+        <div class="help">Negotiated selling price before tax and fees.</div>
+      </div>
+      <div class="field">
+        <label>Down payment ($)</label>
+        <input type="number" id="f_down" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Trade-in equity ($)</label>
+        <input type="number" id="f_trade" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>Sales tax %</label>
+        <input type="number" id="f_tax" inputmode="decimal" step="0.01">
+      </div>
+      <div class="field">
+        <label>Fees ($)</label>
+        <input type="number" id="f_fees" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>APR % <span class="q">?</span></label>
+        <input type="number" id="f_apr" inputmode="decimal" step="0.01">
+        <div class="help">The dealer's "sell rate" is often 1–2 pts above the bank's buy rate. Get pre-approved from a credit union first to set a ceiling.</div>
+      </div>
+      <div class="field">
+        <label>Term (months)</label>
+        <input type="number" id="f_term" inputmode="numeric">
+      </div>
+    </div>
+    <div class="out" id="f_out"></div>
+    <div class="note">Longer terms lower the monthly but dramatically raise total interest — and leave you upside-down longer.</div>
+  </div>
+
+  <div class="card">
+    <h2>Compare two APRs</h2>
+    <div class="row">
+      <div class="field"><label>APR #1 %</label><input type="number" id="ac_a1" inputmode="decimal" step="0.01" value="6.0"></div>
+      <div class="field"><label>APR #2 %</label><input type="number" id="ac_a2" inputmode="decimal" step="0.01" value="4.5"></div>
+      <div class="field"><label>Principal ($)</label><input type="number" id="ac_p" inputmode="decimal" value="35000"></div>
+      <div class="field"><label>Term (months)</label><input type="number" id="ac_n" inputmode="numeric" value="60"></div>
+    </div>
+    <div class="out" id="ac_out"></div>
+  </div>
+</section>
+
+<!-- OTD -->
+<section id="tab-otd" class="tab">
+  <div class="card">
+    <h2>Out-the-door price</h2>
+    <p class="dim" style="margin-top:0;font-size:13px">Negotiate on this number. Ask: "What's my out-the-door price?" and demand an itemized breakdown.</p>
+    <div class="row">
+      <div class="field"><label>Selling price ($)</label><input type="number" id="o_sell" inputmode="decimal"></div>
+      <div class="field"><label>Sales tax %</label><input type="number" id="o_tax" inputmode="decimal" step="0.01"></div>
+      <div class="field"><label>Doc fee ($)</label><input type="number" id="o_doc" inputmode="decimal"></div>
+      <div class="field"><label>Title + reg ($)</label><input type="number" id="o_title" inputmode="decimal"></div>
+      <div class="field"><label>Dealer add-ons ($)</label><input type="number" id="o_addon" inputmode="decimal"></div>
+      <div class="field"><label>Incentives / rebates ($)</label><input type="number" id="o_rebate" inputmode="decimal"></div>
+      <div class="field"><label>Trade-in equity ($)</label><input type="number" id="o_trade" inputmode="decimal"></div>
+    </div>
+    <div class="out" id="o_out"></div>
+    <div class="note" id="o_flags"></div>
+  </div>
+</section>
+
+<!-- GLOSSARY -->
+<section id="tab-gloss" class="tab">
+  <div class="card">
+    <h2>Glossary</h2>
+    <details><summary>Money factor</summary><p>The lease equivalent of an interest rate, written as a small decimal like .00125. Multiply by 2400 to get the APR. Dealers mark this up — always ask for the "buy rate."</p></details>
+    <details><summary>Residual value</summary><p>What the bank estimates the car will be worth at lease end, as a % of MSRP. Set by the bank, non-negotiable. Higher residual = lower depreciation = lower payment.</p></details>
+    <details><summary>Capitalized cost (cap cost)</summary><p>The lease version of "purchase price" — the price financed through the lease, including fees rolled in.</p></details>
+    <details><summary>Cap cost reduction</summary><p>Money down on a lease. Risky: if the car is totaled early, you lose it. Most experts recommend $0 down.</p></details>
+    <details><summary>Acquisition fee</summary><p>Bank fee to originate the lease ($595–$995 typically). Non-negotiable but should not be charged twice.</p></details>
+    <details><summary>Disposition fee</summary><p>Charged at lease end if you return the car ($350–$500). Often waived if you lease/buy another car from the same brand.</p></details>
+    <details><summary>Doc fee</summary><p>Dealer processing fee. State-capped in many states. Non-negotiable at some dealers, but above $500 is suspect.</p></details>
+    <details><summary>MSRP vs invoice</summary><p>MSRP = sticker price. Invoice = what the dealer paid the manufacturer (approximately — holdback complicates this). Negotiate down from MSRP, not up from invoice.</p></details>
+    <details><summary>APR vs interest rate</summary><p>APR includes certain fees and is the true cost of borrowing over a year. Interest rate is just the rate on the principal. APR is what you compare.</p></details>
+    <details><summary>Gap insurance</summary><p>Pays the difference between what you owe and what the car is worth if it's totaled. Built into most leases. On a loan, credit unions sell it for 1/3 of the dealer price.</p></details>
+    <details><summary>ADM / market adjustment</summary><p>Dealer markup above MSRP. In normal markets, decline it. Walk away if they won't remove it.</p></details>
+    <details><summary>Dealer holdback</summary><p>A rebate the manufacturer pays the dealer (2–3% of MSRP) after the sale. Means they can sell below invoice and still profit.</p></details>
+    <details><summary>Buy rate vs sell rate</summary><p>Buy rate is what the bank offers the dealer. Sell rate is what the dealer offers you. The difference is dealer profit. Ask for the buy rate.</p></details>
+    <details><summary>Trade-in equity</summary><p>Value of your trade minus what you still owe. Negative = "upside down / underwater." Never roll negative equity into a new loan.</p></details>
+    <details><summary>1% rule (lease heuristic)</summary><p>A "good" lease has a monthly payment ≤ 1% of MSRP (pre-tax). $40k car → aim for under $400/mo.</p></details>
+  </div>
+</section>
+
+<!-- RED FLAGS -->
+<section id="tab-flags" class="tab">
+  <div class="card">
+    <h2>Before you sit down</h2>
+    <ul class="checklist">
+      <li><b>Get pre-approved.</b> Walk in with a credit union pre-approval. It sets a ceiling on the APR the dealer can offer.</li>
+      <li><b>Know the OTD you'll accept.</b> Decide your walk-away number before you walk in.</li>
+      <li><b>Separate the three conversations.</b> Price of car, trade-in value, and financing are independent. Dealers love to mix them — don't let them.</li>
+      <li><b>Ignore the monthly payment.</b> Negotiate OTD. Monthly is a knob the dealer twists to hide the real numbers.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Lease red flags</h2>
+    <ul class="checklist">
+      <li><b>Marked-up money factor.</b> Ask "is this the buy rate?" — they must tell you. Mark-ups of .0004 = ~1% APR in disguise.</li>
+      <li><b>$0 down, really?</b> Any "down payment" on a lease is a cap cost reduction and is lost if the car is totaled early.</li>
+      <li><b>Disposition fee surprise.</b> Ask what it is up front. Often $350–$500 at return.</li>
+      <li><b>Mileage tier.</b> 10k/yr is common default — going to 12k or 15k is cheap up front, way cheaper than $0.25/mile overage.</li>
+      <li><b>Acquisition fee charged twice.</b> Look for a "bank fee" and an "acquisition fee" on the same sheet.</li>
+      <li><b>Cap cost inflated quietly.</b> Check that selling price on the lease matches what you negotiated.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Finance red flags</h2>
+    <ul class="checklist">
+      <li><b>Rate markup.</b> If your pre-approval is 5.5% and they offer 6.9%, that extra 1.4% is dealer reserve. Negotiate or walk.</li>
+      <li><b>Term extension trick.</b> "We lowered your payment!" often means they extended 60 → 72 months and raised total interest by thousands.</li>
+      <li><b>Negative equity rollover.</b> If your trade is worth less than you owe, rolling it into the new loan compounds the problem. Pay it off separately if you can.</li>
+      <li><b>Payment packing.</b> Salesperson quotes a monthly that silently includes extended warranty and GAP. Demand the itemized OTD.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Add-ons to decline (or cut hard)</h2>
+    <ul class="checklist">
+      <li><b>VIN etching.</b> $200–$500 for something that costs $20 at an auto shop. Decline.</li>
+      <li><b>Nitrogen tires.</b> Decline. Air is 78% nitrogen already.</li>
+      <li><b>Paint + fabric protection.</b> Decline. Wax and Scotchgard do the same thing.</li>
+      <li><b>Dealer alarm / wheel locks.</b> Decline unless already installed and they remove the charge.</li>
+      <li><b>Extended warranty.</b> Negotiable by thousands. Never buy at first quote. Can be purchased later.</li>
+      <li><b>GAP insurance.</b> Worth buying — but from a credit union for ~1/3 of dealer price.</li>
+      <li><b>Doc fee above state cap.</b> Google "[your state] doc fee cap" — if theirs is higher, push back.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Power phrases</h2>
+    <ul class="checklist">
+      <li><b>"What is the out-the-door price?"</b> Forces them off monthly-payment games.</li>
+      <li><b>"Is that the buy rate or the sell rate?"</b> Signals you know what's up.</li>
+      <li><b>"I need to see an itemized breakdown."</b> Surfaces padded fees.</li>
+      <li><b>"Remove that line and I'll sign today."</b> Specific, actionable, hard to refuse.</li>
+      <li><b>"I'll think about it."</b> Then leave. The best offers often come by text that evening.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<nav class="tabs">
+  <button data-tab="lease" class="active"><span class="ico">🚗</span>Lease</button>
+  <button data-tab="mf"><span class="ico">↔</span>MF/APR</button>
+  <button data-tab="fin"><span class="ico">💳</span>Finance</button>
+  <button data-tab="otd"><span class="ico">🚪</span>OTD</button>
+  <button data-tab="gloss"><span class="ico">📖</span>Terms</button>
+  <button data-tab="flags"><span class="ico">⚠️</span>Flags</button>
+</nav>
+
+<script>
+(() => {
+  const $  = id => document.getElementById(id);
+  const fmt = n => (isFinite(n) ? n : 0).toLocaleString('en-US', { style:'currency', currency:'USD', maximumFractionDigits: 2 });
+  const fmt0 = n => (isFinite(n) ? n : 0).toLocaleString('en-US', { style:'currency', currency:'USD', maximumFractionDigits: 0 });
+  const num = el => { const v = parseFloat(el.value); return isFinite(v) ? v : 0; };
+
+  // Tabs
+  document.querySelectorAll('nav.tabs button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('nav.tabs button').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      $('tab-' + b.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Field help toggles
+  document.querySelectorAll('label .q').forEach(q => {
+    q.addEventListener('click', e => {
+      e.preventDefault();
+      q.closest('.field').classList.toggle('open');
+    });
+  });
+
+  // Persistence
+  const INPUTS = [...document.querySelectorAll('input')];
+  const KEY = 'cartools-v1';
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } })();
+  INPUTS.forEach(i => { if (saved[i.id] != null && i.value === '') i.value = saved[i.id]; });
+  const save = () => {
+    const o = {};
+    INPUTS.forEach(i => { if (i.value !== '') o[i.id] = i.value; });
+    try { localStorage.setItem(KEY, JSON.stringify(o)); } catch {}
+  };
+
+  // Lease
+  function calcLease() {
+    const msrp = num($('l_msrp')), sell = num($('l_sell')), resPct = num($('l_res')) / 100,
+          mf = num($('l_mf')), term = num($('l_term')),
+          down = num($('l_down')), acq = num($('l_acq')), doc = num($('l_doc')),
+          tax = num($('l_tax')) / 100, trade = num($('l_trade'));
+    const resDollars = msrp * resPct;
+    const capCost = sell + acq + doc - down - trade;
+    const depFee = term > 0 ? (capCost - resDollars) / term : 0;
+    const rentFee = (capCost + resDollars) * mf;
+    const pre = depFee + rentFee;
+    const monthly = pre * (1 + tax);
+    const totalMonthly = monthly * term;
+    const dueAtSign = down + acq + doc + monthly; // rough
+    const totalCost = totalMonthly + down;
+    const apr = mf * 2400;
+    const onePct = msrp * 0.01;
+    const pctOfMsrp = msrp > 0 ? (pre / msrp) * 100 : 0;
+    const dealClass = pctOfMsrp <= 1 ? 'good' : pctOfMsrp <= 1.25 ? 'warn' : 'bad';
+    const dealLabel = pctOfMsrp <= 1 ? 'Good' : pctOfMsrp <= 1.25 ? 'Fair' : 'Expensive';
+    $('l_out').innerHTML = `
+      <div class="line"><span>Depreciation fee / mo</span><b>${fmt(depFee)}</b></div>
+      <div class="line"><span>Rent charge / mo</span><b>${fmt(rentFee)}</b></div>
+      <div class="line"><span>Pre-tax monthly</span><b>${fmt(pre)}</b></div>
+      <div class="line big"><span>Monthly (with tax)</span><b>${fmt(monthly)}</b></div>
+      <div class="line"><span>Equivalent APR</span><b>${apr.toFixed(2)}%</b></div>
+      <div class="line"><span>Residual $ at end</span><b>${fmt0(resDollars)}</b></div>
+      <div class="line"><span>Total of payments</span><b>${fmt0(totalMonthly)}</b></div>
+      <div class="line"><span>Total cost (incl. down)</span><b>${fmt0(totalCost)}</b></div>
+      <div class="line"><span>1% rule target</span><b>${fmt0(onePct)} / mo</b></div>
+      <div class="line"><span>Deal rating</span><b class="${dealClass}">${dealLabel} (${pctOfMsrp.toFixed(2)}%)</b></div>
+    `;
+  }
+
+  // MF <-> APR
+  function mfChanged(src) {
+    const mf = $('mf_mf'), apr = $('mf_apr');
+    if (src === 'mf') { const v = num(mf); apr.value = v ? (v * 2400).toFixed(2) : ''; }
+    else { const v = num(apr); mf.value = v ? (v / 2400).toFixed(5) : ''; }
+  }
+  function calcMfCompare() {
+    const mf1 = num($('cmp_mf1')), mf2 = num($('cmp_mf2')),
+          cap = num($('cmp_cap')), res = num($('cmp_res')), term = num($('cmp_term'));
+    const rent1 = (cap + res) * mf1 * term;
+    const rent2 = (cap + res) * mf2 * term;
+    const diff = Math.abs(rent1 - rent2);
+    const winner = mf1 < mf2 ? '#1' : '#2';
+    $('cmp_out').innerHTML = `
+      <div class="line"><span>MF #1 total rent</span><b>${fmt0(rent1)}</b></div>
+      <div class="line"><span>MF #2 total rent</span><b>${fmt0(rent2)}</b></div>
+      <div class="line"><span>APR #1 / #2</span><b>${(mf1*2400).toFixed(2)}% / ${(mf2*2400).toFixed(2)}%</b></div>
+      <div class="line big"><span>Savings with ${winner}</span><b class="good">${fmt0(diff)}</b></div>
+    `;
+  }
+
+  // Finance
+  function pmt(P, apr, n) {
+    const r = apr / 100 / 12;
+    if (r === 0) return n > 0 ? P / n : 0;
+    return P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  }
+  function calcFin() {
+    const price = num($('f_price')), down = num($('f_down')), trade = num($('f_trade')),
+          tax = num($('f_tax')) / 100, fees = num($('f_fees')),
+          apr = num($('f_apr')), term = num($('f_term'));
+    const taxable = Math.max(price - trade, 0);
+    const principal = taxable + (taxable * tax) + fees - down;
+    const p = pmt(principal, apr, term);
+    const total = p * term;
+    const interest = total - principal;
+    $('f_out').innerHTML = `
+      <div class="line"><span>Amount financed</span><b>${fmt0(principal)}</b></div>
+      <div class="line big"><span>Monthly payment</span><b>${fmt(p)}</b></div>
+      <div class="line"><span>Total of payments</span><b>${fmt0(total)}</b></div>
+      <div class="line"><span>Total interest</span><b class="${interest > principal * 0.15 ? 'warn' : ''}">${fmt0(interest)}</b></div>
+      <div class="line"><span>Out-the-door (cash equiv.)</span><b>${fmt0(taxable + taxable*tax + fees)}</b></div>
+    `;
+  }
+  function calcAprCompare() {
+    const a1 = num($('ac_a1')), a2 = num($('ac_a2')),
+          p = num($('ac_p')), n = num($('ac_n'));
+    const p1 = pmt(p, a1, n), p2 = pmt(p, a2, n);
+    const i1 = p1 * n - p, i2 = p2 * n - p;
+    const diff = Math.abs(i1 - i2);
+    const winner = a1 < a2 ? '#1' : '#2';
+    $('ac_out').innerHTML = `
+      <div class="line"><span>APR #1 monthly / interest</span><b>${fmt(p1)} / ${fmt0(i1)}</b></div>
+      <div class="line"><span>APR #2 monthly / interest</span><b>${fmt(p2)} / ${fmt0(i2)}</b></div>
+      <div class="line big"><span>Savings with ${winner}</span><b class="good">${fmt0(diff)}</b></div>
+    `;
+  }
+
+  // OTD
+  function calcOtd() {
+    const sell = num($('o_sell')), tax = num($('o_tax')) / 100,
+          doc = num($('o_doc')), title = num($('o_title')),
+          addon = num($('o_addon')), rebate = num($('o_rebate')), trade = num($('o_trade'));
+    const taxBase = Math.max(sell - trade - rebate, 0);
+    const taxDue = taxBase * tax;
+    const otd = sell + taxDue + doc + title + addon - rebate - trade;
+    $('o_out').innerHTML = `
+      <div class="line"><span>Selling price</span><b>${fmt0(sell)}</b></div>
+      <div class="line"><span>Sales tax</span><b>${fmt0(taxDue)}</b></div>
+      <div class="line"><span>Doc + title/reg</span><b>${fmt0(doc + title)}</b></div>
+      <div class="line"><span>Dealer add-ons</span><b>${fmt0(addon)}</b></div>
+      <div class="line"><span>− Incentives</span><b>−${fmt0(rebate)}</b></div>
+      <div class="line"><span>− Trade-in equity</span><b>−${fmt0(trade)}</b></div>
+      <div class="line big"><span>Out-the-door</span><b>${fmt0(otd)}</b></div>
+    `;
+    const flags = [];
+    if (doc > 500) flags.push(`<span class="pill warn">Doc fee ${fmt0(doc)} is high — check your state cap.</span>`);
+    if (addon > 0) flags.push(`<span class="pill bad">Dealer add-on ${fmt0(addon)}: ask them to remove it.</span>`);
+    if (sell > 0 && trade > 0 && rebate > 0) flags.push(`<span class="pill good">Trade + rebate both present — verify tax was calculated on the reduced base.</span>`);
+    $('o_flags').innerHTML = flags.join(' ') || '<span class="dim">Enter numbers to see red-flag checks.</span>';
+  }
+
+  // Wire up
+  const recalc = () => { calcLease(); calcMfCompare(); calcFin(); calcAprCompare(); calcOtd(); save(); };
+  INPUTS.forEach(i => i.addEventListener('input', () => {
+    if (i.id === 'mf_mf')  mfChanged('mf');
+    if (i.id === 'mf_apr') mfChanged('apr');
+    recalc();
+  }));
+  recalc();
+})();
+</script>
+</body>
+</html>
